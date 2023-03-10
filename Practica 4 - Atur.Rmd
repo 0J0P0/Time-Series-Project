@@ -1,0 +1,151 @@
+---
+title: "Practica 4 - Atur"
+author: "Juan Pablo Zaldivar && Enric Millan"
+date: "2023-03-10"
+output: html_document
+---
+
+# Atur
+
+## Introducción
+
+```{r, echo=FALSE, include=FALSE}
+library(zoo)
+library(ggplot2)
+library(forecast)
+library(ggfortify)
+```
+
+```{r}
+ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D',
+         ts.geom='ribbon', ts.fill='#73C6B6')
+```
+
+```{r}
+lnser <- log(ser)
+d12lnser = diff(lnser, 12)
+d1d12lnser = diff(d12lnser)
+```
+
+...?
+
+```{r}
+
+```
+
+
+Modelos:
+
+$$\mbox{ARIMA}(1,1,1)(0,1,1)_{12} \\ \mbox{ARIMA}(8,1,0)(0,1,1)_{12}$$
+
+### Modelo 1
+
+$$ecuacion desarrollada$$
+
+```{r}
+m1 <- arima(lnser, order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
+m1
+```
+
+### Modelo 2
+
+$$ecuacion desarrollada$$
+
+```{r}
+m2 <- arima(lnser, order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
+m2
+```
+
+## 1. Variancia constante
+
+**Feu el plot dels residus i el de l'arrel quadrada del valor aboluts dels residus amb ajust suau. Podem considerar que la variancia es constant?**
+
+```{r}
+
+```
+
+## 2. Hipótesis de Normalidad
+
+**Feu el plot de normalitat i l’histograma amb la corba normal superposada. Aplica el test de Shapiro-Wilks als residus. Podem considerar que els residus provenen d’una distribucio normal?**
+
+```{r}
+
+```
+
+## 3. Independencia de residuos
+
+**Feu l’ACF i el PACF dels residus i la representacio dels p-valors pel test de Ljung-Box. Podem considerar que els residus son independents?**
+
+```{r}
+
+```
+
+## 4. Modelo causal/invertible
+
+**Pels polinomis caracteristics de la part AR i MA, calculeu el modul de les seves arrels. El model estimat, es causal? es invertible?**
+
+```{r}
+
+```
+
+## 5. Medidas de adecuación
+
+**Calculeu les mesures d’adequaci´o a les dades (AIC i BIC)**
+
+```{r}
+
+```
+
+## 6. Estabilidad del modelo
+
+**Ajusteu el model amb totes les dades i amb les dades sense les 12 darreres observacions. Podem considerar estable el model?**
+
+```{r}
+
+```
+
+## 7. Predicciones puntuales
+
+**Pel model ajustat sense les 12 darreres observacions, obtingueu les prediccions puntuals i el corresponent interval de confianca al 95% per a l’ultim any. Feu la representacio de la serie original (darrers 5 anys) amb les prediccions i intervals superposats.**
+
+```{r}
+
+```
+
+## 8. Medidas de capacidad de predicción
+
+**Calculeu les mesures de capacitat de previsio (RMSPE i MAPE) a partir de les prediccions puntuals anteriors. Aixo dona una idea de l’exactitud de les prediccions.**
+
+```{r}
+
+```
+
+## 9. Intervalos de confianza
+
+**Calculeu la mitjana de les amplades dels intervals de confinaca de prediccio. Aixo es una mesura de la precisio de les prediccions.**
+
+```{r}
+
+```
+
+## 10. Selección del modelo
+
+**Amb tota la informacio anterior, quin dels dos models proposats seleccioneu com a millor? Pel model escollit ajustat amb totes les dades, calculeu les previsions amb intervals de confianca pel proper any**
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+.
