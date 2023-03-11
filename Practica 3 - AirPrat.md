@@ -12,7 +12,7 @@ ser <- ts(read.table("../Data/airbcn.dat")/1000,start=1990,freq=12)
 
 **Feu la representacio grafica de la serie temporal. Descriviu els aspectes mes rellevants que s'observen a simple vista.**
 
-```{r}
+```r
 plot(ser,main="Miles de pasajeros de lineas aereas internacionales (BCN-Prat)")
 abline(v=1990:2020, lty=3, col=4)
 plot(decompose(ser))
@@ -30,7 +30,7 @@ Igualmente se puede apreciar un ligero descenso en el año 2008, muy posiblement
 
 A modo de comprobar una variabilidad en la serie se realizan gráfico de las medias y variancias de grupos de observaciones así como también un gráfico de los boxplot por periodos.
 
-```{r}
+```r
 # Calculate the mean and variance of consecutive groups of 8-12 observations.
 m <- apply(matrix(ser, nrow=12), 2, mean)
 v <- apply(matrix(ser, nrow=12), 2, var)
@@ -40,14 +40,14 @@ plot(v~m, ylab="Variance", xlab="Mean")
 
 Hay un claro aumento de la variancia de la serie entre los valores inciales y finales de la serie.
 
-```{r}
+```r
 # Measurement of dispersion, ignoring outilers.
 boxplot(ser~floor(time(ser)))
 ```
 
 Con el boxplot por grupos se ve aún con más claridad, puesto que la altura de las cajas del IQR aumenta a medida que el tiempo. De lo cual se concluye que se requiere de una trasnformación obtener una variancia constante.
 
-```{r}
+```r
 lnser <- log(ser)
 plot(lnser,main="Log de pasajeros de lineas aereas internacionales (BCN-Prat)")
 abline(v=1990:2020, lty=3, col=4)
@@ -55,7 +55,7 @@ abline(v=1990:2020, lty=3, col=4)
 
 Tras este cambio de escala después de la transformación logaritmica se observan en ambos gráficos ya una misma variancia para los grupos de observaciones.
 
-```{r}
+```r
 # Measurement of dispersion, ignoring outilers.
 boxplot(lnser~floor(time(lnser)))
 ```
@@ -66,11 +66,11 @@ Se puede observar que los IQR de los boxplot de los grupos tienen aproximadament
 
 Para buscar un posible patrón estacional de orden 12, se grafican las subseries de la serie original por meses para observar la distribución de cada una de las medias.
 
-```{r}
+```r
 monthplot(lnser)
 ```
 
-```{r}
+```r
 # Each line is a year
 ts.plot(matrix(lnser, nrow=12), col=1:8)
 ```
@@ -79,7 +79,7 @@ Vease que hay un incremento de la variancia en los dos trimestres intermedios de
 
 Se requiere de una diferenciación estacional para eliminar el patrón de la serie.
 
-```{r}
+```r
 d12lnser = diff(lnser, 12)
 plot(d12lnser,main="Serie después de la diferenciación estacional")
 abline(v=1990:2020, lty=3, col=4)
@@ -87,7 +87,7 @@ abline(v=1990:2020, lty=3, col=4)
 
 Después de aplicar este filtro lineal las medias de cada subserie se alinean horizontalmente.
 
-```{r}
+```r
 monthplot(d12lnser)
 ```
 
@@ -95,7 +95,7 @@ monthplot(d12lnser)
 
 Se aplica una diferenciación regular hasta que la media de la serie se pueda considerar constante.
 
-```{r}
+```r
 d1d12lnser = diff(d12lnser)
 plot(d1d12lnser,main="Serie depués de la diferenciación regular")
 abline(v=1990:2020, lty=3, col=4)
@@ -104,14 +104,14 @@ abline(h=mean(d1d12lnser), col=2) # mean of the series.
 
 Tras esta diferenciación la media de la serie parece bastante constante ya, se ha de mirar si no se ha incrementado la variancia.
 
-```{r}
+```r
 var(d12lnser)
 var(d1d12lnser)
 ```
 
 Repetir hasta que se detecte un incremento de la variancia de la serie.
 
-```{r}
+```r
 d1d1d12lnser = diff(d1d12lnser)
 plot(d1d1d12lnser,main="Serie depués de la diferenciación regular")
 abline(v=1990:2020, lty=3, col=4)
@@ -120,7 +120,7 @@ abline(h=mean(d1d1d12lnser), col=2) # mean of the series.
 
 Ya se ha detectado una diferenciación regular inecesaria.
 
-```{r}
+```r
 var(d1d12lnser)
 var(d1d1d12lnser)
 ```
@@ -129,7 +129,7 @@ Ha habido un incremento en la variancia de la serie, por lo tanto la última dif
 
 ### 3.4 Serie estacionaria resultante
 
-```{r}
+```r
 plot(d1d12lnser,main="Serie Estacionaria")
 abline(v=1990:2020, lty=3, col=4)
 abline(h=mean(d1d12lnser), col=2) # mean of the series.
@@ -145,7 +145,7 @@ $$W_t = (1-B)(1-B^{12})\log{X_t}$$ Con $d = 1$ y $D = 1$.
 
 ### 4.1 ACF y PACF muestral
 
-```{r}
+```r
 # justificar el lag
 par(mfrow=c(1, 2)) # plot two graphics
 acf(d1d12lnser, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1, 11)))
@@ -192,7 +192,7 @@ $$(1 - \Phi_1 B^{12} - \Phi_2 B^{24})(1-B^{12})(1-B)\log{(X_t - \mu_2)} = (1 + \
 
 Como se ha obtenido ya una serie $W_t$ estacionaria, tiene un solo valor de para la media de la serie $\hat{\mu_1}$, con lo que se procede a estimarla.
 
-```{r}
+```r
 mod1 <- arima(d1d12lnser, order=c(2, 0, 0), 
               seasonal=list(order=c(2,0,0), period=12))
 mod1
@@ -206,13 +206,13 @@ $$t = \frac{\hat{\mu_1} - 0}{S_{W_t}} \sim N(0,1)$$
 
 asintoticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud.
 
-```{r}
+```r
 cat("Is the mean significant?", abs(mod1$coef[5]/sqrt(diag(mod1$var.coef)[5])) > 2)
 ```
 
 Al no tener significación la media de la serie $\hat{\mu_1}$, se puede aplicar la función `ARIMA` al logaritmo de la serie orignal aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre el logaritmo de la serie.
 
-```{r}
+```r
 mod1 <- arima(lnser, order=c(2,1,0), seasonal=list(order=c(2,1,0), period=12))
 mod1
 ```
@@ -221,13 +221,13 @@ Verificamos que la decisión de retirar la media del modelo ha sido la adecuada 
 
 #### 6.1.1 Signifiación de los parámetros modelo 1
 
-```{r}
+```r
 cat("\nT-ratios:",round(mod1$coef/sqrt(diag(mod1$var.coef)),2))
 ```
 
 Se observa que el parámetro $\hat{\phi_2}$ está al borde del intervalo de confianza, por lo que ajustaremos un modelo eliminandolo y se compararán ambos modelos en terminos de su AIC.
 
-```{r}
+```r
 mod1b <- arima(lnser, order=c(2,1,0), seasonal=list(order=c(2,1,0),
                 period=12), fixed=c(NA, 0, NA, NA))
 mod1b
@@ -239,7 +239,7 @@ El resto de parámetros si son significativos, como se ha visto anteriormente.
 
 #### 6.1.2 ACF del residuo modelo 1
 
-```{r}
+```r
 par(mfrow=c(1, 2)) # plot two graphics
 acf(resid(mod1), ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1, 11)))
 pacf(resid(mod1), ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11), 2))
@@ -255,7 +255,7 @@ Los retrasos estacionales no son significativos, por lo que el modelo explica ad
 
 Nuevamente se comprubeba la significación de la media $\hat{\mu_2}$, esta vez para el segundo modelo propuesto.
 
-```{r}
+```r
 mod2 <- arima(d1d12lnser, order=c(0,0,1), seasonal=list(order=c(2,0,0), period=12))
 mod2
 ```
@@ -270,13 +270,13 @@ $$t = \frac{\hat{\mu_1} - 0}{S_{W_t}} \sim N(0,1)$$
 
 asintoticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud.
 
-```{r}
+```r
 cat("Is the mean significant?", abs(mod2$coef[4]/sqrt(diag(mod2$var.coef)[4])) > 2)
 ```
 
 Al no tener significación la media de la serie $\hat{\mu_2}$, se puede aplicar la función `ARIMA` al logaritmo de la serie orignal aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre el logaritmo de la serie.
 
-```{r}
+```r
 mod2 <- arima(lnser, order=c(0,1,1), seasonal=list(order=c(2,1,0), period=12))
 mod2
 ```
@@ -285,7 +285,7 @@ Verificamos que la decisión de retirar la media del modelo ha sido la adecuada 
 
 #### 6.2.1 Signifiación de los parámetros modelo 2
 
-```{r}
+```r
 cat("\nT-ratios:",round(mod2$coef/sqrt(diag(mod2$var.coef)),2))
 ```
 
@@ -293,7 +293,7 @@ Para el segundo modelo propuesto, tanto los parámetros de la parte estacional c
 
 #### 6.2.2 ACF del residuo modelo 2
 
-```{r}
+```r
 par(mfrow=c(1, 2)) # plot two graphics
 acf(resid(mod2), ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1, 11)))
 pacf(resid(mod2), ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11), 2))
@@ -309,7 +309,7 @@ Se encuentran componentes estacionales ligeramente por encima de las bandas de c
 
 **Indiqueu quin model proposarıeu, fent servir el criteri de l'AIC.**
 
-```{r}
+```r
 mod1$aic
 mod2$aic
 ```
@@ -320,6 +320,6 @@ $$(1 - \Phi_1 B^{12} - \Phi_2 B^{24})(1-B^{12})(1-B)\log{X_t} = (1 + \theta_1 B)
 
 $$(1 +0.6358 B^{12} +0.4189 B^{24})(1-B^{12})(1-B)\log{X_t} = (1 -0.3676 B)Z_t$$ con $Z_t \sim N(0, 0.00228)$.
 
-```{r}
+```r
 mod2
 ```
