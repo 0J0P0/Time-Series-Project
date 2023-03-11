@@ -1,10 +1,3 @@
----
-title: ""
-author: ""
-date: ""
-output: html_document
----
-
 # AirPrat
 
 ## 1.
