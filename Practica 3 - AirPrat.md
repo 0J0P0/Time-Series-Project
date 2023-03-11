@@ -4,7 +4,7 @@
 
 **Carregueu el fitxer que conte la serie. Definiu les dades llegides com a objecte de tipus ts (time series) indicant l'origen i la frequencia de la serie.**
 
-```{r}
+```r
 ser <- ts(read.table("../Data/airbcn.dat")/1000,start=1990,freq=12)
 ```
 
