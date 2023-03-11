@@ -30,76 +30,291 @@ d1d12lnser = diff(d12lnser)
 
 ...?
 
-```{r}
-
-```
-
-
-Modelos:
-
-$$\mbox{ARIMA}(1,1,1)(0,1,1)_{12} \\ \mbox{ARIMA}(8,1,0)(0,1,1)_{12}$$
-
 ### Modelo 1
 
-$$ecuacion desarrollada$$
+$$\mbox{ARIMA}(1,1,1)(0,1,1)_{12}$$
+
+$$(1 - \phi_1 B)(1-B)(1-B^{12})X_t = (1 + \theta_1 B)(1 + \Theta_1 B^{12})Z_t$$
+
+...
+
+```{r}
+m1 <- arima(d1d12lnser, order=c(1,0,1), seasonal=list(order=c(0,0,1), period=12))
+m1
+```
+
+...
+
+```{r}
+cat("Is the mean significant?",
+    abs(m1$coef[4]/sqrt(diag(m1$var.coef)[4])) > 2)
+```
+
+...
 
 ```{r}
 m1 <- arima(lnser, order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
 m1
 ```
 
+...
+
+```{r}
+cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
+```
+
+...
+
 ### Modelo 2
 
-$$ecuacion desarrollada$$
+SE TIENE QUE HACER LO MISMO PARA EL MODELO 2??????????????
+
+$$\mbox{ARIMA}(8,1,0)(0,1,1)_{12}$$
+
+$$(1 - \phi_1 B - \phi_2 B^2 - \phi_3 B^3 - \phi_4 B^4 - \phi_5 B^5 - \phi_6 B^6 - \phi_7 B^7 - \phi_8 B^8)(1-B)(1-B^{12})X_t = (1 + \Theta_1 B^{12})Z_t$$
+
+...
+
+```{r}
+m2 <- arima(d1d12lnser, order=c(8,0,0), seasonal=list(order=c(0,0,1), period=12))
+m2
+```
+
+...
+
+```{r}
+cat("Is the mean significant?",
+    abs(m2$coef[10]/sqrt(diag(m2$var.coef)[10])) > 2)
+```
+
+...
 
 ```{r}
 m2 <- arima(lnser, order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
 m2
 ```
 
+...
+
+```{r}
+cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
+```
+
+...
+
 ## 1. Variancia constante
 
 **Feu el plot dels residus i el de l'arrel quadrada del valor aboluts dels residus amb ajust suau. Podem considerar que la variancia es constant?**
 
-```{r}
+### Modelo 1
 
+...
+
+```{r}
+resi1 <- resid(m1)
+plot(resi1); abline(h=0); abline(h=c(-3*sd(resi1),3*sd(resi1)),lty=3,col=4)
 ```
+
+...
+
+```{r}
+scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
+```
+
+...
+
+### Modelo 2
+
+...
+
+```{r}
+resi2 <- resid(m2)
+plot(resi2); abline(h=0); abline(h=c(-3*sd(resi2),3*sd(resi2)),lty=3,col=4)
+```
+
+...
+
+```{r}
+scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
+```
+
+...
 
 ## 2. Hipótesis de Normalidad
 
 **Feu el plot de normalitat i l’histograma amb la corba normal superposada. Aplica el test de Shapiro-Wilks als residus. Podem considerar que els residus provenen d’una distribucio normal?**
 
-```{r}
+### Modelo 1
 
+...
+
+```{r}
+qqnorm(resi1); qqline(resi1,col=2,lwd=2)
 ```
+
+...
+
+```{r}
+hist(resi1,breaks=20, freq=FALSE)
+curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
+```
+
+...
+
+```{r}
+shapiro.test(resi1)
+```
+
+...
+
+### Modelo 2
+
+...
+
+```{r}
+qqnorm(resi2); qqline(resi2,col=2,lwd=2)
+```
+
+...
+
+```{r}
+hist(resi2,breaks=20, freq=FALSE)
+curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
+```
+
+...
+
+```{r}
+shapiro.test(resi2)
+```
+
+...
 
 ## 3. Independencia de residuos
 
 **Feu l’ACF i el PACF dels residus i la representacio dels p-valors pel test de Ljung-Box. Podem considerar que els residus son independents?**
 
-```{r}
+### Modelo 1
 
+...
+
+```{r}
+par(mfrow=c(1, 2)) # plot two graphics
+acf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
+pacf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
+
+...
+
+```{r}
+tsdiag(m1,gof.lag=72)
+```
+
+...
+
+### Modelo 2
+
+...
+
+```{r}
+par(mfrow=c(1, 2)) # plot two graphics
+acf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
+pacf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
+```
+
+...
+
+```{r}
+tsdiag(m2,gof.lag=72)
+```
+
+...
 
 ## 4. Modelo causal/invertible
 
 **Pels polinomis caracteristics de la part AR i MA, calculeu el modul de les seves arrels. El model estimat, es causal? es invertible?**
 
-```{r}
+### Modelo 1
 
+Al ser un modelo **ARMA**, se pueden comprobar si el modelo propuesto cumple con ambas propiedades. Es decir, que los pesos de $\psi(B)$ y $\pi(B)$ tienen convergencia.
+
+Se comenzará comprobando si el modelo 1 es casual/estacionario, para ello se han de comprobar que el módulo de todas las raices del polinómio característico del componente autoregresivo $\phi_p(B)$ sean mayor que la unidad.
+
+```{r}
+Mod(polyroot(c(1,-m1$model$phi)))
 ```
+
+Como solo hay una única raíz y es superior a 1, el modelo 1 puede definirse como causal.
+
+Para comprobar si el modelo 1 es invertible, se mirarán las raices ahora de un polinomio de grado $13$, resultado conjunto de la parte regular y estacional del modelo.
+
+```{r}
+Mod(polyroot(c(1,m1$model$theta)))
+```
+
+Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible. 
+
+```{r}
+plot(m1)
+```
+
+Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el modelo 1 es tanto causal como invertible.
+
+### Modelo 2
+
+Se comenzará comprobando si el modelo 2 es casual/estacionario, para ello se han de comprobar que el módulo de todas las raices del polinómio característico del componente autoregresivo $\phi_p(B)$ sean mayor que la unidad.
+
+```{r}
+Mod(polyroot(c(1,-m2$model$phi)))
+```
+
+Al tener todas las raices modulo mayor que 1, el modelo 2 puede definirse como causal.
+
+Para comprobar si el modelo 2 es invertible, se mirarán las raices ahora de un polinomio de grado $12$, al solo contar con la componente estacional.
+
+```{r}
+Mod(polyroot(c(1,m2$model$theta)))
+```
+
+Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible. 
+
+```{r}
+plot(m2)
+```
+
+Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el modelo 2 es tanto causal como invertible.
 
 ## 5. Medidas de adecuación
 
 **Calculeu les mesures d’adequaci´o a les dades (AIC i BIC)**
 
-```{r}
+### Modelo 1
 
+```{r}
+AIC(m1); BIC(m1)
 ```
+
+...
+
+### Modelo 2
+
+```{r}
+AIC(m2); BIC(m2)
+```
+
+...
 
 ## 6. Estabilidad del modelo
 
 **Ajusteu el model amb totes les dades i amb les dades sense les 12 darreres observacions. Podem considerar estable el model?**
+
+### Modelo 1
+
+```{r}
+
+```
+
+### Modelo 2
 
 ```{r}
 
@@ -109,6 +324,14 @@ m2
 
 **Pel model ajustat sense les 12 darreres observacions, obtingueu les prediccions puntuals i el corresponent interval de confianca al 95% per a l’ultim any. Feu la representacio de la serie original (darrers 5 anys) amb les prediccions i intervals superposats.**
 
+### Modelo 1
+
+```{r}
+
+```
+
+### Modelo 2
+
 ```{r}
 
 ```
@@ -117,6 +340,14 @@ m2
 
 **Calculeu les mesures de capacitat de previsio (RMSPE i MAPE) a partir de les prediccions puntuals anteriors. Aixo dona una idea de l’exactitud de les prediccions.**
 
+### Modelo 1
+
+```{r}
+
+```
+
+### Modelo 2
+
 ```{r}
 
 ```
@@ -124,6 +355,14 @@ m2
 ## 9. Intervalos de confianza
 
 **Calculeu la mitjana de les amplades dels intervals de confinaca de prediccio. Aixo es una mesura de la precisio de les prediccions.**
+
+### Modelo 1
+
+```{r}
+
+```
+
+### Modelo 2
 
 ```{r}
 
@@ -136,8 +375,6 @@ m2
 ```{r}
 
 ```
-
-
 
 
 
