@@ -19,11 +19,12 @@ library(TSstudio)
 ```
 
 ```{r}
-ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
-autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D',
-         ts.geom='ribbon', ts.fill='#73C6B6')
+ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
+#ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+#autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
+#ts_plot(ser)
+plot(ser)
 
-ts_plot(ser)
 ```
 
 ```{r}
@@ -104,7 +105,6 @@ m2
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
 
-...
 
 ## 1. Variancia constante
 
@@ -112,23 +112,23 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 
 ### Modelo 1
 
-A modo de visualizar la variabilidad de los residuos del modelo 1, se dibujan los siguientes dos gráficos para visualizar como estan distribuidos los residuos del modelo y su distribución. Es deseable que el $99,7%$ de los residuos se encuentren dentro de las bandas de probabilidad para poder una variabilidad constante.
+A modo de visualizar la variabilidad de los residuos del modelo 1, se dibujan los siguientes dos gráficos para visualizar como estan distribuidos. Es deseable que el $99,7%$ de los residuos se encuentren dentro de las bandas de probabilidad para poder una variabilidad constante.
 
 ```{r}
 resi1 <- resid(m1)
 plot(resi1); abline(h=0); abline(h=c(-3*sd(resi1),3*sd(resi1)),lty=3,col=4)
 ```
 
-Se observan valores atípicos que sobre salen de las lineas de probabilidad. Estos son considerados como outliers y probablemente sean explicados por factores externos a la serie temporal. Dichos valores de residuos suman un total de aproximadamente 4 muestras, lo que corresponde a un $1,45%$ de las observaciones de la serie temporal.
+Se observan valores atípicos que sobresalen de las lineas de probabilidad. Estos son considerados como outliers y probablemente sean explicados por factores externos a la serie temporal. Dichos valores de residuos suman un total de aproximadamente 4 muestras, lo que corresponde a un $1,45%$ de las observaciones de la serie temporal.
 
-En el gráfico de los residuos algunos intervalos se pueden interpretar como clusters de volatilidad, aunque no muy visibles a primera vista. Por lo tanto no seria razonable admitir una varianza relativamente constante, incluyendo tambien el número elevado de valores atípicos de la serie.
+En este mismo gráfico algunos intervalos se podrían interpretar como clusters de volatilidad, aunque no muy distinguibles a simple vista. Por lo que, de momento, no seria razonable admitir una varianza considerablemente constante, principal mente debido a el número elevado de valores atípicos de la serie.
 
 
 ```{r}
 scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
 ```
 
-Gracias al ajuste local suave de la variabilidad de la serie en el gráfico de arriba, se observa que la linea de estimación no es del todo horizontal, sino que presenta una curvatura concava. Lo cual descalifica el modelo 1 para considerar variancia constante.
+Gracias al ajuste local suave de la variabilidad de la serie en el gráfico de arriba, se observa que la linea de estimación no es del todo horizontal, sino que presenta una curvatura concava. Lo cual descalifica, junto a las demás razones explicadas, el modelo 1 para considerar variancia constante.
 
 ### Modelo 2
 
