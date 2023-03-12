@@ -15,12 +15,15 @@ library(zoo)
 library(ggplot2)
 library(forecast)
 library(ggfortify)
+library(TSstudio)
 ```
 
 ```{r}
 ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
 autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D',
          ts.geom='ribbon', ts.fill='#73C6B6')
+
+ts_plot(ser)
 ```
 
 ```{r}
