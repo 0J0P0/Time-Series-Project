@@ -19,11 +19,11 @@ library(TSstudio)
 ```
 
 ```{r}
-ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
-#ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
-#autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
-#ts_plot(ser)
-plot(ser)
+# ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
+ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+# autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
+ts_plot(ser, slider=TRUE)
+# plot(ser)
 
 ```
 
@@ -132,7 +132,7 @@ Gracias al ajuste local suave de la variabilidad de la serie en el gráfico de a
 
 ### Modelo 2
 
-...
+Para el gráfico de los residuos en el segundo modelo se observan un total de 3 valores atípicos, que corresponden al $1,09%$ de las muestras, por lo que, una vez más, esto podría ocasionar problemas para confirmar la hipótesis de homocedasticidad de la variancia.
 
 ```{r}
 resi2 <- resid(m2)
@@ -145,7 +145,7 @@ plot(resi2); abline(h=0); abline(h=c(-3*sd(resi2),3*sd(resi2)),lty=3,col=4)
 scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
 ```
 
-...
+El segundo gráfico nos muestra una tendencia similar a la del primer modelo, pero aún más acentuada, presentando una curvatura mayor. Por lo que, si en el anterior modelo se ha descartado variancia cosntante, la decisión de descartarlo en este modelo esta mas justificada.
 
 ## 2. Hipótesis de Normalidad
 
@@ -178,27 +178,29 @@ Después de realizar el test de Shapiro-Wilk, se rechaza la hipotesis nula y no 
 
 ### Modelo 2
 
-...
+En el caso del modelo 2, nuevamente la región central se ajusta correctamente a la hipotesis de normalidad. En cambio, los extremos difieren considerablemente ya que incluso se alejan del intervalo de confianza.
+
+Si bien se podría considerar que en el extremo inferior solo hay presencia de un número reducido de outliers, para el extremos superior no se puede validar la misma asunción. Por lo que se tendría que considerar una presencia de *heavy tails*, por lo menos, en el extremo superior, debido a esta separación continua de los residuos.
 
 ```{r}
-qqPlot(resi1, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample Quantiles", grid=FALSE)
-qqline(resi1,col=2,lwd=2)
+qqPlot(resi2, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample Quantiles", grid=FALSE)
+qqline(resi2,col=2,lwd=2)
 ```
 
-...
+El histograma confirma que los residuos distribuidos en el último cuartil no encajan con la hipotesis de normalidad al tener una frecuencia elevada que sobrepasa la curvatura de la distribución normal.
 
 ```{r}
 hist(resi2,breaks=20, freq=FALSE)
 curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
 ```
 
-...
+Para terminar de confirmar que no se satisface la normalidad de los residuos, se efectua el test Shapiro-Wilk, obteniendo un `pvalor` muy por debajo del nivel de significación establecido.
 
 ```{r}
 shapiro.test(resi2)
 ```
 
-...
+De modo que la conclusión final es que el modelo 2 no cumple con la condición de normalidad de residuos.
 
 ## 3. Independencia de residuos
 
@@ -206,7 +208,10 @@ shapiro.test(resi2)
 
 ### Modelo 1
 
-...
+Para el primer modelo propuesto, se observa que los retrasos estacionales encajan a la perfección en las bandas de confianza, por tanto se confirma que la componente estacional del modelo 1 explica adecuadamente el patrón estacional de la serie temporal.
+
+
+
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -214,7 +219,7 @@ acf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-...
+PREGUNTAR EN EL CASO DEL ARMA --> ARMA(7,1) o ARMA(1,7)???
 
 ```{r}
 tsdiag(m1,gof.lag=72)
@@ -224,7 +229,9 @@ tsdiag(m1,gof.lag=72)
 
 ### Modelo 2
 
-...
+Analizando ambos gráficos, se observa rápidamente que ningun retraso (ni estacional ni regular) sobrepasa las bandas de confianza de manera significativa, indicando que los residuos se ajustan convenientemente al comportamiento de un *White Noise*.
+
+El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Por lo que, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de LJung-Box permitirá confirmar dicha desición.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -232,7 +239,9 @@ acf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-...
+Observando el test estadístico de LJung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. 
+
+Todo el conjunto de retrasos confirman ser no significativos y ajustarse a la condición de independencia.
 
 ```{r}
 tsdiag(m2,gof.lag=72)
@@ -299,6 +308,8 @@ Se comprueba visualmente que, en este caso, la inversa de las raices de los dos 
 **Calculeu les mesures d’adequaci´o a les dades (AIC i BIC)**
 
 ### Modelo 1
+
+En términos del AIC 
 
 ```{r}
 AIC(m1); BIC(m1)
