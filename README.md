@@ -7,3 +7,4 @@
 - [GGplot for Time Series 2](https://www.geeksforgeeks.org/time-series-visualization-with-ggplot2-in-r/)
 - [Colours](https://htmlcolorcodes.com/)
 - [TSstudio - Useful for more detailed plots](https://github.com/RamiKrispin/TSstudio)
+- [Plotly](https://plotly.com/r/)
