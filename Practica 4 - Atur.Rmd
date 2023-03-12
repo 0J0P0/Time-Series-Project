@@ -210,8 +210,7 @@ De modo que la conclusión final es que el modelo 2 no cumple con la condición 
 
 Para el primer modelo propuesto, se observa que los retrasos estacionales encajan a la perfección en las bandas de confianza, por tanto se confirma que la componente estacional del modelo 1 explica adecuadamente el patrón estacional de la serie temporal.
 
-
-
+En cambio, para el caso regular, en ambos gráficos sobresale notablemente el sexto retraso. Esto nos indica que el modelo 1 podría no estar explicando bien la serie temporal y por tanto no estar cumpliendo la independencia de los residuos. Esto se confirmará con el test estadistico de Ljung-Box.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -219,7 +218,7 @@ acf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi1, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-PREGUNTAR EN EL CASO DEL ARMA --> ARMA(7,1) o ARMA(1,7)???
+Notese que el sexto retraso (y algunos contiguos) tienen un `pvalor` inferior a $0.05$ en el test de Ljung-Box, lo que indica que no se puede considerar que sea fruto del azar. Por tanto, no se puede confirmar la hipotesis de independencia de los residuos. La cual es la condición más importante al tratarse de una serie temporal y que implica que este modelo no representaría la serie de forma correcta.
 
 ```{r}
 tsdiag(m1,gof.lag=72)
@@ -231,7 +230,7 @@ tsdiag(m1,gof.lag=72)
 
 Analizando ambos gráficos, se observa rápidamente que ningun retraso (ni estacional ni regular) sobrepasa las bandas de confianza de manera significativa, indicando que los residuos se ajustan convenientemente al comportamiento de un *White Noise*.
 
-El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Por lo que, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de LJung-Box permitirá confirmar dicha desición.
+El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Por lo que, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de Ljung-Box permitirá confirmar dicha desición.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -239,7 +238,7 @@ acf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-Observando el test estadístico de LJung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. 
+Observando el test estadístico de Ljung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. 
 
 Todo el conjunto de retrasos confirman ser no significativos y ajustarse a la condición de independencia.
 
