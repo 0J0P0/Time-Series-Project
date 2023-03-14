@@ -112,7 +112,9 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 
 ### Modelo 1
 
-A modo de visualizar la variabilidad de los residuos del modelo 1, se dibujan los siguientes dos gráficos para visualizar como estan distribuidos. Es deseable que el $99,7%$ de los residuos se encuentren dentro de las bandas de probabilidad para poder una variabilidad constante.
+A modo de visualizar la variabilidad de los residuos del modelo 1, se dibujan los siguientes dos gráficos para visualizar como estan distribuidos. Es deseable que el $99,7%$ de los residuos se encuentren dentro de las bandas de probabilidad para poder considerar una variabilidad constante.
+
+Se busca comentar la presencia de outliers en los residuos o incluso indicios de volatibilidad de la variancia.
 
 ```{r}
 resi1 <- resid(m1)
@@ -132,20 +134,20 @@ Gracias al ajuste local suave de la variabilidad de la serie en el gráfico de a
 
 ### Modelo 2
 
-Para el gráfico de los residuos en el segundo modelo se observan un total de 3 valores atípicos, que corresponden al $1,09%$ de las muestras, por lo que, una vez más, esto podría ocasionar problemas para confirmar la hipótesis de homocedasticidad de la variancia.
+Es deseable no encontrar una frecuencia excesiva de residuos fuera de los intervalos de confianza, ya que esto contradiría la hipótesis de homocedasticidad de los residuos. De igual manera, se busca comentar la presencia de outliers en los residuos o incluso indicios de volatibilidad de la variancia.
 
 ```{r}
 resi2 <- resid(m2)
 plot(resi2); abline(h=0); abline(h=c(-3*sd(resi2),3*sd(resi2)),lty=3,col=4)
 ```
 
-...
+Para el gráfico de los residuos en el segundo modelo se observan un total de 3 valores atípicos, que corresponden al $1,09%$ de las muestras, por lo que, una vez más, esto podría ocasionar problemas para confirmar la hipótesis de homocedasticidad de la variancia.
 
 ```{r}
 scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
 ```
 
-El segundo gráfico nos muestra una tendencia similar a la del primer modelo, pero aún más acentuada, presentando una curvatura mayor. Por lo que, si en el anterior modelo se ha descartado variancia cosntante, la decisión de descartarlo en este modelo esta mas justificada.
+El segundo gráfico nos muestra una tendencia similar a la del primer modelo, pero aún más acentuada, presentando una curvatura mayor. Por lo que, si en el anterior modelo se ha descartado variancia cosntante, la decisión de descartarlo en este modelo es aun mas justificada.
 
 ## 2. Hipótesis de Normalidad
 
@@ -167,7 +169,7 @@ hist(resi1,breaks=20, freq=FALSE)
 curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 ```
 
-Con el histrograma se podría admitir que el modelo 1 cumple la hipotesis de normalidad. En cambio, a los extremos de la curva de la distribución, hay barras que sobresalen y por lo tanto con una mayor frecuencia que la que se habría de esperar bajo la hipotesis de normalidad. Dichas *heavy tails* son, una vez más, una confirmación de la volatidlidad que presenta la serie.
+Con el centro del histrograma se podría admitir que el modelo 1 cumple la hipotesis de normalidad. En cambio, a los extremos de las curvas de la distribución hay barras que sobresalen con una mayor frecuencia que la que se habría de esperar bajo la hipotesis de normalidad. Dichas *heavy tails* son, una vez más, una confirmación de la volatidlidad que presenta la serie.
 
 
 ```{r}
@@ -210,7 +212,9 @@ De modo que la conclusión final es que el modelo 2 no cumple con la condición 
 
 Para el primer modelo propuesto, se observa que los retrasos estacionales encajan a la perfección en las bandas de confianza, por tanto se confirma que la componente estacional del modelo 1 explica adecuadamente el patrón estacional de la serie temporal.
 
-En cambio, para el caso regular, en ambos gráficos sobresale notablemente el sexto retraso. Esto nos indica que el modelo 1 podría no estar explicando bien la serie temporal y por tanto no estar cumpliendo la independencia de los residuos. Esto se confirmará con el test estadistico de Ljung-Box.
+En cambio, para el caso regular, en ambos gráficos sobresale notablemente el sexto retraso. Esto nos indica que el modelo 1 podría no estar explicando bien la serie temporal y por tanto no estar cumpliendo la independencia de los residuos. 
+
+Aunque su significación de estos retrasos es clara, se confirmará con el test estadistico de Ljung-Box para ver si puede ser por fruto del azar, aunque muy problablemnete no se pueda justificar de esa manera al estar relativamente cerca del origen.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -224,13 +228,13 @@ Notese que el sexto retraso (y algunos contiguos) tienen un `pvalor` inferior a 
 tsdiag(m1,gof.lag=72)
 ```
 
-...
+Dicha conclusión de que el modelo 1 actual no es suficiente, convendría reformular la identificación del modelo 1 para poder conseguir, dentro de lo posible, un comportamiento de los residuos similar al de *White Noise*.
 
 ### Modelo 2
 
-Analizando ambos gráficos, se observa rápidamente que ningun retraso (ni estacional ni regular) sobrepasa las bandas de confianza de manera significativa, indicando que los residuos se ajustan convenientemente al comportamiento de un *White Noise*.
+Analizando ambos gráficos, se observa rápidamente que ningun retraso (ni estacional ni regular) sobrepasa las bandas de confianza de manera significativa, indicando que los residuos de la parte estacional como la regular tienen una estructura de correlación no significativa. Lo cual conlleva a que los residuos se ajusten convenientemente al comportamiento de un *White Noise*.
 
-El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Por lo que, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de Ljung-Box permitirá confirmar dicha desición.
+El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Sin embargo, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de Ljung-Box permitirá confirmar dicha desición.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -238,15 +242,13 @@ acf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-Observando el test estadístico de Ljung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. 
-
-Todo el conjunto de retrasos confirman ser no significativos y ajustarse a la condición de independencia.
+Observando el test estadistico incremental de Ljung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. De manera que no se rechaza la hipotesis nula.
 
 ```{r}
 tsdiag(m2,gof.lag=72)
 ```
 
-...
+Como todo el conjunto de retrasos confirman ser no significativos y ajustarse a la condición de independencia, se puede validar que el modelo 2 cumple con la independencia de residuos.
 
 ## 4. Modelo causal/invertible
 
