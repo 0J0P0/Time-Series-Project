@@ -21,7 +21,7 @@ library(TSstudio)
 ```{r}
 # ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
 ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
-# autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
+# autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6'))
 ts_plot(ser, slider=TRUE, color='#73C6B6')
 
 ```
@@ -392,14 +392,23 @@ Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que
 ```{r}
 prediction1 = predict(m1_train, n.ahead=12)
 pr1 = prediction1$pred
-tl1 = pr1 - prediction1$se # límite inferior
-tu1 = pr1 + prediction1$se # límite superior
+tl1 = pr1 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite inferior
+tu1 = pr1 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite superior
 ```
 
 ```{r}
-ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2018),
-type="o"); abline(v=2013:2018,lty=3,col=4)
+ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
+type="o"); abline(v=2013:2019,lty=3,col=4)
 
+
+sert <- ts_split(ts.obj = lnser, sample.out = 12)
+md <- auto.arima(sert$train)
+fc <- forecast(md, h = 12)
+plot_forecast(fc)
+
+
+myforecast <- forecast(m1_train, level=95, h=12)
+plot(myforecast, xlim=c(2013,2019))
 ```
 
 ### Modelo 2
@@ -407,14 +416,16 @@ type="o"); abline(v=2013:2018,lty=3,col=4)
 ```{r}
 prediction2 = predict(m2_train, n.ahead=12)
 pr2 = prediction2$pred
-tl2 = pr2 - prediction2$se # límite inferior
-tu2 = pr2 + prediction2$se # límite superior
+tl2 = pr2 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite inferior
+tu2 = pr2 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite superior
 ```
 
 ```{r}
-ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2018),
-type="o"); abline(v=2013:2018,lty=3,col=4)
+ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
+type="o"); abline(v=2013:2019,lty=3,col=4)
 
+myforecast <- forecast(m1_train, level=95, h=12)
+plot(myforecast, xlim=c(2013,2019))
 ```
 
 ## 8. Medidas de capacidad de predicción
