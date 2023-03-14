@@ -19,8 +19,8 @@ library(TSstudio)
 ```
 
 ```{r}
-# ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
-ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
+#ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
 # autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
 ts_plot(ser, slider=TRUE)
 # plot(ser)
@@ -306,41 +306,66 @@ Se comprueba visualmente que, en este caso, la inversa de las raices de los dos 
 
 ## 5. Medidas de adecuación
 
-**Calculeu les mesures d’adequaci´o a les dades (AIC i BIC)**
+**Calculeu les mesures d’adequació a les dades (AIC i BIC)**
 
 ### Modelo 1
 
-En términos del AIC 
+AIC i BIC del modelo 1:
 
 ```{r}
 AIC(m1); BIC(m1)
 ```
 
-...
-
 ### Modelo 2
+
+AIC i BIC del modelo 2:
 
 ```{r}
 AIC(m2); BIC(m2)
 ```
 
-...
-
 ## 6. Estabilidad del modelo
 
 **Ajusteu el model amb totes les dades i amb les dades sense les 12 darreres observacions. Podem considerar estable el model?**
 
+Primero declaramos la serie sin sus últimas doce muestras para poder comprobar si los modelos propuestos son estables.
+```{r}
+ultimo=c(2017,12); serie_2=window(ser, end=ultimo)
+```
+
 ### Modelo 1
 
 ```{r}
-
+m1_2 <- arima(log(serie_2), order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
+m1_2
+m1
 ```
+Como se puede observar los coeficientes de el modelo completo y el modelo carente de las últimas 12 observaciones son prácticamente iguales: mismo signo y magnitud muyu similar.
+
+Para acabar de confirmar que el modelo 1 es un  modelo estable veamos si ambos conjuntos de coeficiente también tienen una signifiación muy parecida:
+
+```{r}
+cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
+cat("\nT-ratios:",round(m1_2$coef/sqrt(diag(m1$var.coef)),2))
+```
+Las significaciones son casi idénticas por lo que podemos afirmar que el Modelo 1 es un modelo estable.
 
 ### Modelo 2
 
 ```{r}
-
+m2_2 <- arima(log(serie_2), order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
+m2_2
+m2
 ```
+Una vez más tanto el modelo completo como el modelo de la serie sin sus últimas doce observaciones constan de coeficientes con el mismo signo y magnitudes muy similares.
+
+Comprobemos su significación para corroborar que el Modelo 2 también es un modelo estable:
+
+```{r}
+cat("\nT-ratios:",round(m2$coef/sqrt(diag(m1$var.coef)),2))
+cat("\nT-ratios:",round(m2_2$coef/sqrt(diag(m1$var.coef)),2))
+```
+Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que también podemos decir que el Modelo 2 es un modelo estable.
 
 ## 7. Predicciones puntuales
 
