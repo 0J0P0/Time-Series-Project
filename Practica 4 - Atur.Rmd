@@ -19,11 +19,10 @@ library(TSstudio)
 ```
 
 ```{r}
-ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
-#ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+# ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
+ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
 # autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
-ts_plot(ser, slider=TRUE)
- plot(ser)
+ts_plot(ser, slider=TRUE, color='#73C6B6')
 
 ```
 
@@ -105,7 +104,6 @@ m2
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
 
-
 ## 1. Variancia constante
 
 **Feu el plot dels residus i el de l'arrel quadrada del valor aboluts dels residus amb ajust suau. Podem considerar que la variancia es constant?**
@@ -123,14 +121,13 @@ plot(resi1); abline(h=0); abline(h=c(-3*sd(resi1),3*sd(resi1)),lty=3,col=4)
 
 Se observan valores atípicos que sobresalen de las lineas de probabilidad. Estos son considerados como outliers y probablemente sean explicados por factores externos a la serie temporal. Dichos valores de residuos suman un total de aproximadamente 4 muestras, lo que corresponde a un $1,45%$ de las observaciones de la serie temporal.
 
-En este mismo gráfico algunos intervalos se podrían interpretar como clusters de volatilidad, aunque no muy distinguibles a simple vista. Por lo que, de momento, no seria razonable admitir una varianza considerablemente constante, principal mente debido a el número elevado de valores atípicos de la serie.
-
+En este mismo gráfico algunos intervalos se podrían interpretar como clusters de volatilidad, aunque no muy distinguibles a simple vista. Por lo que, de momento, no sería razonable admitir una varianza considerablemente constante, principalmente debido al número elevado de valores atípicos de la serie.
 
 ```{r}
 scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
 ```
 
-Gracias al ajuste local suave de la variabilidad de la serie en el gráfico de arriba, se observa que la linea de estimación no es del todo horizontal, sino que presenta una curvatura concava. Lo cual descalifica, junto a las demás razones explicadas, el modelo 1 para considerar variancia constante.
+Gracias al ajuste local suave de la variabilidad en el gráfico de arriba, se observa que la linea de estimación no es del todo horizontal, sino que presenta una curvatura concava. Lo cual descalifica, junto a las demás razones explicadas, el modelo 1 para considerar variancia constante.
 
 ### Modelo 2
 
@@ -147,40 +144,39 @@ Para el gráfico de los residuos en el segundo modelo se observan un total de 3 
 scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
 ```
 
-El segundo gráfico nos muestra una tendencia similar a la del primer modelo, pero aún más acentuada, presentando una curvatura mayor. Por lo que, si en el anterior modelo se ha descartado variancia cosntante, la decisión de descartarlo en este modelo es aun mas justificada.
+El segundo gráfico nos muestra una tendencia similar a la del primer modelo, pero aún más acentuada, presentando una curvatura mayor. Por lo que, si en el anterior modelo se ha descartado variancia cosntante, la decisión de descartarlo en este modelo es aún más justificada.
 
 ## 2. Hipótesis de Normalidad
 
-**Feu el plot de normalitat i l’histograma amb la corba normal superposada. Aplica el test de Shapiro-Wilks als residus. Podem considerar que els residus provenen d’una distribucio normal?**
+**Feu el plot de normalitat i l'histograma amb la corba normal superposada. Aplica el test de Shapiro-Wilks als residus. Podem considerar que els residus provenen d'una distribucio normal?**
 
 ### Modelo 1
 
-En la gráfica de normalidad, los residuos de las observaciones intermedias parecen ajustarse fielmente con los cuantiles teóricos de bajo la distribución de la normalidad. Sin embargo, se observan un conjunto seguido de puntos en ambos extremos que se separan de las linea de ajuste, lo cual confirma el hecho de una posible volatilidad en los residuos. Indicando que el modelo 1 no es suficiente para explicar la serie.
+En la gráfica de normalidad, los residuos de las observaciones intermedias parecen ajustarse fielmente con los cuantiles teóricos bajo la distribución de la normalidad. Sin embargo, se observa un conjunto seguido de puntos en ambos extremos que se separan de las linea de ajuste, lo cual confirma el hecho de una posible volatilidad en los residuos. Indicando que el modelo ARIMA 1 no es suficiente para explicar la serie.
 
 ```{r}
 qqPlot(resi1, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample Quantiles", grid=FALSE)
 qqline(resi1,col=2,lwd=2)
 ```
 
-Por otro lado, no se observa una asimetría en los residuos, ya que no hay una curvatura notable a la hora de graficarlos. Lo que si es que se pueden identificar unos valores que posiblemente puedan ser considerandos como outliers, detalle ya mencionado previamente en el apartado anterior. Se identifican rápidamente al estar separados del resto de valores y adémas de estar en los extremos del ajuste.
+Por otro lado, no se observa una asimetría en los residuos, ya que no hay una curvatura notable a la hora de graficarlos. Lo que si es que se pueden identificar unos valores que posiblemente puedan ser considerados como outliers, detalle ya mencionado previamente en el apartado anterior. Se identifican rápidamente al estar separados del resto de valores y adémas de estar en los extremos del ajuste.
 
 ```{r}
 hist(resi1,breaks=20, freq=FALSE)
 curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 ```
 
-Con el centro del histrograma se podría admitir que el modelo 1 cumple la hipotesis de normalidad. En cambio, a los extremos de las curvas de la distribución hay barras que sobresalen con una mayor frecuencia que la que se habría de esperar bajo la hipotesis de normalidad. Dichas *heavy tails* son, una vez más, una confirmación de la volatidlidad que presenta la serie.
-
+Con el centro del histrograma se podría admitir que el modelo 1 cumple la hipotesis de normalidad. En cambio, a los extremos de las curvas de la distribución hay barras que sobresalen con una mayor frecuencia que la que se habría de esperar bajo la hipótesis de normalidad. Dichas *heavy tails* son, una vez más, una confirmación de la volatidlidad que presenta la serie.
 
 ```{r}
 shapiro.test(resi1)
 ```
 
-Después de realizar el test de Shapiro-Wilk, se rechaza la hipotesis nula y no se confirma que los residuos del modelo 1 siguan una distribución normal. Todo esto debido, además de las justificaciones previas, a que el `pvalor` del test estadistico es inferior al grado de significación $0.05$.
+Después de realizar el test de Shapiro-Wilk, se rechaza la hipótesis nula y no se confirma que los residuos del modelo 1 sigan una distribución normal. Todo esto, debido además de las justificaciones previas, a que el `pvalor` del test estadistico es inferior al grado de significación $0.05$.
 
 ### Modelo 2
 
-En el caso del modelo 2, nuevamente la región central se ajusta correctamente a la hipotesis de normalidad. En cambio, los extremos difieren considerablemente ya que incluso se alejan del intervalo de confianza.
+En el caso del modelo 2, nuevamente la región central se ajusta correctamente a la hipótesis de normalidad. En cambio, los extremos difieren considerablemente ya que incluso se alejan del intervalo de confianza.
 
 Si bien se podría considerar que en el extremo inferior solo hay presencia de un número reducido de outliers, para el extremos superior no se puede validar la misma asunción. Por lo que se tendría que considerar una presencia de *heavy tails*, por lo menos, en el extremo superior, debido a esta separación continua de los residuos.
 
@@ -189,14 +185,14 @@ qqPlot(resi2, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample
 qqline(resi2,col=2,lwd=2)
 ```
 
-El histograma confirma que los residuos distribuidos en el último cuartil no encajan con la hipotesis de normalidad al tener una frecuencia elevada que sobrepasa la curvatura de la distribución normal.
+El histograma confirma que los residuos distribuidos en el último cuartil no encajan con la hipótesis de normalidad al tener una frecuencia elevada que sobrepasa la curvatura de la distribución normal.
 
 ```{r}
 hist(resi2,breaks=20, freq=FALSE)
 curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
 ```
 
-Para terminar de confirmar que no se satisface la normalidad de los residuos, se efectua el test Shapiro-Wilk, obteniendo un `pvalor` muy por debajo del nivel de significación establecido.
+Para terminar de confirmar que no se satisface la normalidad de los residuos, se efectua el test Shapiro-Wilk, obteniendo un `pvalor` muy por debajo del nivel de significación establecido. Notesé que el `pvalor` del modelo 2 en el test de Shapiro-Wilk es mayor que en el del modelo 1.
 
 ```{r}
 shapiro.test(resi2)
@@ -206,15 +202,15 @@ De modo que la conclusión final es que el modelo 2 no cumple con la condición 
 
 ## 3. Independencia de residuos
 
-**Feu l’ACF i el PACF dels residus i la representacio dels p-valors pel test de Ljung-Box. Podem considerar que els residus son independents?**
+**Feu l'ACF i el PACF dels residus i la representacio dels p-valors pel test de Ljung-Box. Podem considerar que els residus son independents?**
 
 ### Modelo 1
 
 Para el primer modelo propuesto, se observa que los retrasos estacionales encajan a la perfección en las bandas de confianza, por tanto se confirma que la componente estacional del modelo 1 explica adecuadamente el patrón estacional de la serie temporal.
 
-En cambio, para el caso regular, en ambos gráficos sobresale notablemente el sexto retraso. Esto nos indica que el modelo 1 podría no estar explicando bien la serie temporal y por tanto no estar cumpliendo la independencia de los residuos. 
+En cambio, para el caso regular, en ambos gráficos sobresale notablemente el sexto retraso. Esto nos indica que el modelo 1 podría no estar explicando bien la serie temporal y por tanto no estar cumpliendo con la independencia de los residuos.
 
-Aunque su significación de estos retrasos es clara, se confirmará con el test estadistico de Ljung-Box para ver si puede ser por fruto del azar, aunque muy problablemnete no se pueda justificar de esa manera al estar relativamente cerca del origen.
+Aunque la significación de estos retrasos es clara, se confirmará con el test estadistico de Ljung-Box para ver si puede ser por fruto del azar, aunque muy problablemnete no se pueda justificar de esa manera al estar relativamente cerca del origen.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -228,13 +224,13 @@ Notese que el sexto retraso (y algunos contiguos) tienen un `pvalor` inferior a 
 tsdiag(m1,gof.lag=72)
 ```
 
-Dicha conclusión de que el modelo 1 actual no es suficiente, convendría reformular la identificación del modelo 1 para poder conseguir, dentro de lo posible, un comportamiento de los residuos similar al de *White Noise*.
+A partir de la conclusión de que el modelo 1 actual no es suficiente, convendría reformular la identificación del modelo 1 para poder conseguir, dentro de lo posible, un comportamiento de los residuos similar al de *White Noise*.
 
 ### Modelo 2
 
 Analizando ambos gráficos, se observa rápidamente que ningun retraso (ni estacional ni regular) sobrepasa las bandas de confianza de manera significativa, indicando que los residuos de la parte estacional como la regular tienen una estructura de correlación no significativa. Lo cual conlleva a que los residuos se ajusten convenientemente al comportamiento de un *White Noise*.
 
-El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Sin embargo, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5%$ de azar. El test de Ljung-Box permitirá confirmar dicha desición.
+El único retraso que llega a rozar, incluso exceder el límite del intervalo de confianza es el número 30. Sin embargo, debido a lo lejano que está del origen y lo poco que llega a sobrepasar dicho límite, se considerará que forma parte del $5\%$ de azar. El test de Ljung-Box permitirá confirmar dicha decisión.
 
 ```{r}
 par(mfrow=c(1, 2)) # plot two graphics
@@ -242,7 +238,7 @@ acf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(2, rep(1,11)))
 pacf(resi2, ylim=c(-1, 1), lag.max=60, lwd=2, col=c(rep(1, 11),2))
 ```
 
-Observando el test estadistico incremental de Ljung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. De manera que no se rechaza la hipotesis nula.
+Observando el test estadístico incremental de Ljung-Box, se confirma que el único retraso "significativo" detectado anteriormente, puede considerarse fruto del azar, debido a que su `pvalor` excede por mucho el grado de significación determinado. De manera que no se rechaza la hipotesis nula.
 
 ```{r}
 tsdiag(m2,gof.lag=72)
@@ -272,7 +268,7 @@ Para comprobar si el modelo 1 es invertible, se mirarán las raices ahora de un 
 Mod(polyroot(c(1,m1$model$theta)))
 ```
 
-Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible. 
+Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible.
 
 ```{r}
 plot(m1)
@@ -296,7 +292,7 @@ Para comprobar si el modelo 2 es invertible, se mirarán las raices ahora de un 
 Mod(polyroot(c(1,m2$model$theta)))
 ```
 
-Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible. 
+Como todas tienen modulo mayor que la unidad, también se puede caracterizar el modelo como invertible.
 
 ```{r}
 plot(m2)
@@ -306,11 +302,11 @@ Se comprueba visualmente que, en este caso, la inversa de las raices de los dos 
 
 ## 5. Medidas de adecuación
 
-**Calculeu les mesures d’adequació a les dades (AIC i BIC)**
+**Calculeu les mesures d'adequació a les dades (AIC i BIC)**
 
 ### Modelo 1
 
-AIC i BIC del modelo 1:
+AIC i BIC del modelo 1: No se distingue una diferenciación relativamente grande entre ambas medidas de adecuación ya que los tres parámetros del modelo son altamente significativos.
 
 ```{r}
 AIC(m1); BIC(m1)
@@ -318,70 +314,83 @@ AIC(m1); BIC(m1)
 
 ### Modelo 2
 
-AIC i BIC del modelo 2:
+AIC i BIC del modelo 2: Como el modelo 2 incorpora dos parámetros con un nivel de significación inferior a 2 en valor absoluto, es lógico encontrar una diferencia mayor entre el AIC y BIC que en comparación con el modelo 1. Esto debido a que la penalización por incorporar los parámetros, es decir, aumentar la complejidad del modelo es superior en el BIC.
 
 ```{r}
 AIC(m2); BIC(m2)
 ```
-El Modelo 2 tiene un AIC inferior (es un mejor modelo en términos del AIC) ya que el AIC no penaliza tanto la complejidad. En cambio, como el BIC es más estricto y penaliza más la complejidad, el Modelo 1 tiene un BIC inferior (es mejor en términos del BIC).
+
+El modelo 2 tiene un AIC inferior (es un mejor modelo en términos del AIC) ya que el AIC no penaliza tanto la complejidad. En cambio, como el BIC es más estricto y penaliza más la complejidad, el modelo 1 tiene un BIC inferior (es mejor en términos del BIC).
 
 ```{r}
 (AIC_diff = abs(AIC(m1)-AIC(m2)))
 (BIC_diff = abs(BIC(m1)-BIC(m2)))
 ```
+
 La diferencia entre los BIC es casi el triple que la diferencia entre los AIC.
 
 ## 6. Estabilidad del modelo
 
 **Ajusteu el model amb totes les dades i amb les dades sense les 12 darreres observacions. Podem considerar estable el model?**
 
-Primero declaramos la serie sin sus últimas doce muestras para poder comprobar si los modelos propuestos son estables.
+La estabilidad del modelo es un propiedad que se cumple si el modelo propuesto para el set de datos *training* es similar al set de datos de *testing*. Donde *training* hará referencia a todo el conjunto de datos desde la primera observación hasta un año antes de la última muestra. Con lo que el set de *testing* consiste en el último año de la serie temporal.
+
+La comparación del ajuste de ambos modelo se basa en tres condiciones cualitativas para poder definir si el modelo cumple la condición de estabilidad: mismo signo, misma magnitud, misma significación.
+
+Primero se declara la serie sin sus últimas 12 muestras para definir el set de *training.*
+
 ```{r}
-ultimo=c(2017,12); serie_2=window(ser, end=ultimo)
+last=c(2017,12); train=window(ser, end=last)
 ```
 
 ### Modelo 1
 
 ```{r}
-m1_2 <- arima(log(serie_2), order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
-m1_2
+m1_train <- arima(log(train), order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
+m1_train
 m1
 ```
-Como se puede observar los coeficientes de el modelo completo y el modelo carente de las últimas 12 observaciones son prácticamente iguales: mismo signo y magnitud muyu similar.
 
-Para acabar de confirmar que el modelo 1 es un  modelo estable veamos si ambos conjuntos de coeficiente también tienen una signifiación muy parecida:
+Como se puede observar los coeficientes de el modelo de *training* y el modelo de conjunto son prácticamente iguales: mismo signo y magnitud muy similar.
+
+Para acabar de confirmar que el modelo 1 es un modelo estable se prueba si ambos conjuntos de coeficientes también tienen una signifiación muy parecida:
 
 ```{r}
 cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
-cat("\nT-ratios:",round(m1_2$coef/sqrt(diag(m1$var.coef)),2))
+cat("\nT-ratios:",round(m1_train$coef/sqrt(diag(m1_train$var.coef)),2))
 ```
-Las significaciones son casi idénticas por lo que podemos afirmar que el Modelo 1 es un modelo estable.
+
+Las significaciones son casi idénticas por lo que podemos afirmar que el modelo 1 es un modelo estable.
 
 ### Modelo 2
 
+De igual manera se debe hacer la misma separación del set de *training* para confirmar la estabilidad del modelo 2.
+
 ```{r}
-m2_2 <- arima(log(serie_2), order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
-m2_2
+m2_train <- arima(log(train), order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
+m2_train
 m2
 ```
+
 Una vez más tanto el modelo completo como el modelo de la serie sin sus últimas doce observaciones constan de coeficientes con el mismo signo y magnitudes muy similares.
 
 Comprobemos su significación para corroborar que el Modelo 2 también es un modelo estable:
 
 ```{r}
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m1$var.coef)),2))
-cat("\nT-ratios:",round(m2_2$coef/sqrt(diag(m1$var.coef)),2))
+cat("\nT-ratios:",round(m2_train$coef/sqrt(diag(m1$var.coef)),2))
 ```
-Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que también podemos decir que el Modelo 2 es un modelo estable.
+
+Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que también podemos decir que el modelo 2 es un modelo estable.
 
 ## 7. Predicciones puntuales
 
-**Pel model ajustat sense les 12 darreres observacions, obtingueu les prediccions puntuals i el corresponent interval de confianca al 95% per a l’ultim any. Feu la representacio de la serie original (darrers 5 anys) amb les prediccions i intervals superposats.**
+**Pel model ajustat sense les 12 darreres observacions, obtingueu les prediccions puntuals i el corresponent interval de confianca al 95% per a l'ultim any. Feu la representacio de la serie original (darrers 5 anys) amb les prediccions i intervals superposats.**
 
 ### Modelo 1
 
 ```{r}
-prediction1 = predict(m1_2, n.ahead=12)
+prediction1 = predict(m1_train, n.ahead=12)
 pr1 = prediction1$pred
 tl1 = pr1 - prediction1$se # límite inferior
 tu1 = pr1 + prediction1$se # límite superior
@@ -393,11 +402,10 @@ type="o"); abline(v=2013:2018,lty=3,col=4)
 
 ```
 
-
 ### Modelo 2
 
 ```{r}
-prediction2 = predict(m2_2, n.ahead=12)
+prediction2 = predict(m2_train, n.ahead=12)
 pr2 = prediction2$pred
 tl2 = pr2 - prediction2$se # límite inferior
 tu2 = pr2 + prediction2$se # límite superior
@@ -411,11 +419,11 @@ type="o"); abline(v=2013:2018,lty=3,col=4)
 
 ## 8. Medidas de capacidad de predicción
 
-**Calculeu les mesures de capacitat de previsio (RMSPE i MAPE) a partir de les prediccions puntuals anteriors. Aixo dona una idea de l’exactitud de les prediccions.**
+**Calculeu les mesures de capacitat de previsio (RMSPE i MAPE) a partir de les prediccions puntuals anteriors. Aixo dona una idea de l'exactitud de les prediccions.**
 
 ```{r}
-inicio=c(2017,12); ultimo=c(2018,12);
-obs = window(lnser, start = inicio, end = ultimo)
+inicio=c(2017,12); last=c(2018,12);
+obs = window(lnser, start = inicio, end = last)
 ```
 
 ### Modelo 1
@@ -472,14 +480,5 @@ tu = pr + prediction$se # límite superior
 ts.plot(lnser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
 type="o"); abline(v=2013:2020,lty=3,col=4)
 ```
-
-
-
-
-
-
-
-
-
 
 .
