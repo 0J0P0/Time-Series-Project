@@ -483,8 +483,8 @@ Teniendo en cuenta estos factores se llega a la conclusión de que el primer mod
 ```{r}
 prediction = predict(m1, n.ahead=12)
 pr = prediction$pred
-tl = pr - prediction$se # límite inferior
-tu = pr + prediction$se # límite superior
+tl = pr - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se # límite inferior
+tu = pr + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se # límite superior
 
 
 ts.plot(lnser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
