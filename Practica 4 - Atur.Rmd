@@ -23,7 +23,7 @@ ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
 #ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
 # autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6')
 ts_plot(ser, slider=TRUE)
-# plot(ser)
+ plot(ser)
 
 ```
 
@@ -323,6 +323,13 @@ AIC i BIC del modelo 2:
 ```{r}
 AIC(m2); BIC(m2)
 ```
+El Modelo 2 tiene un AIC inferior (es un mejor modelo en términos del AIC) ya que el AIC no penaliza tanto la complejidad. En cambio, como el BIC es más estricto y penaliza más la complejidad, el Modelo 1 tiene un BIC inferior (es mejor en términos del BIC).
+
+```{r}
+(AIC_diff = abs(AIC(m1)-AIC(m2)))
+(BIC_diff = abs(BIC(m1)-BIC(m2)))
+```
+La diferencia entre los BIC es casi el triple que la diferencia entre los AIC.
 
 ## 6. Estabilidad del modelo
 
@@ -374,12 +381,31 @@ Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que
 ### Modelo 1
 
 ```{r}
+prediction1 = predict(m1_2, n.ahead=12)
+pr1 = prediction1$pred
+tl1 = pr1 - prediction1$se # límite inferior
+tu1 = pr1 + prediction1$se # límite superior
+```
+
+```{r}
+ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2018),
+type="o"); abline(v=2013:2018,lty=3,col=4)
 
 ```
+
 
 ### Modelo 2
 
 ```{r}
+prediction2 = predict(m2_2, n.ahead=12)
+pr2 = prediction2$pred
+tl2 = pr2 - prediction2$se # límite inferior
+tu2 = pr2 + prediction2$se # límite superior
+```
+
+```{r}
+ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2018),
+type="o"); abline(v=2013:2018,lty=3,col=4)
 
 ```
 
@@ -387,16 +413,25 @@ Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que
 
 **Calculeu les mesures de capacitat de previsio (RMSPE i MAPE) a partir de les prediccions puntuals anteriors. Aixo dona una idea de l’exactitud de les prediccions.**
 
+```{r}
+inicio=c(2017,12); ultimo=c(2018,12);
+obs = window(lnser, start = inicio, end = ultimo)
+```
+
 ### Modelo 1
 
 ```{r}
-
+RMSPE1=sqrt(mean(((obs-pr1)/obs)^2)); MAPE1=mean(abs(obs-pr1)/obs)
+RMSPE1
+MAPE1
 ```
 
 ### Modelo 2
 
 ```{r}
-
+RMSPE2=sqrt(mean(((obs-pr2)/obs)^2)); MAPE2=mean(abs(obs-pr2)/obs)
+RMSPE2
+MAPE2
 ```
 
 ## 9. Intervalos de confianza
@@ -406,21 +441,36 @@ Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que
 ### Modelo 1
 
 ```{r}
-
+mean_length_IC1 = mean(tu1-tl1)
+mean_length_IC1
 ```
 
 ### Modelo 2
 
 ```{r}
-
+mean_length_IC2 = mean(tu2-tl2)
+mean_length_IC2
 ```
 
 ## 10. Selección del modelo
 
-**Amb tota la informacio anterior, quin dels dos models proposats seleccioneu com a millor? Pel model escollit ajustat amb totes les dades, calculeu les previsions amb intervals de confianca pel proper any**
+**Amb tota la informacio anterior, quin dels dos models proposats seleccioneu com a millor? Pel model escollit ajustat amb totes les dades, calculeu les previsions amb intervals de confiança pel proper any**
+
+En primer lugar, comparamos AIC y BIC y vemos que el Modelo 2 tiene un mejor AIC y el Modelo 1 tiene un mejor BIC. Teniendo en cuenta que el BIC es más estricto y que la diferencia entre los dos BIC es considerablemente superior a la diferenncia entre los dos AIC, consideraremos que para este apartado el Modelo 1 es mejor.
+
+En segundo lugar, si nos fijamos en el RMSPE y el MAPE, ambos son inferiores para el primer modelo.
+
+Finalmente, la media de la amplitud de los intervalos de confianza es prácticamente idéntica, siendo ligeramente superior para el Modelo 1.
+
+Teniendo en cuenta estos factores se llega a la conclusión de que el primer modelo es un mejor modelo.
 
 ```{r}
-
+prediction = predict(m1, n.ahead=12)
+pr = prediction$pred
+tl = pr - prediction$se # límite inferior
+tu = pr + prediction$se # límite superior
+ts.plot(lnser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
+type="o"); abline(v=2013:2020,lty=3,col=4)
 ```
 
 
