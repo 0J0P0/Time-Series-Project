@@ -401,14 +401,9 @@ ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
 type="o"); abline(v=2013:2019,lty=3,col=4)
 
 
-sert <- ts_split(ts.obj = lnser, sample.out = 12)
-md <- auto.arima(sert$train)
-fc <- forecast(md, h = 12)
-plot_forecast(fc)
-
-
-myforecast <- forecast(m1_train, level=95, h=12)
+myforecast <- forecast(m1_train, h=12)
 plot(myforecast, xlim=c(2013,2019))
+plot_forecast(myforecast)
 ```
 
 ### Modelo 2
@@ -424,8 +419,10 @@ tu2 = pr2 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # l
 ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
 type="o"); abline(v=2013:2019,lty=3,col=4)
 
-myforecast <- forecast(m1_train, level=95, h=12)
+
+myforecast <- forecast(m2_train, h=12)
 plot(myforecast, xlim=c(2013,2019))
+plot_forecast(myforecast)
 ```
 
 ## 8. Medidas de capacidad de predicción
@@ -475,11 +472,11 @@ mean_length_IC2
 
 **Amb tota la informacio anterior, quin dels dos models proposats seleccioneu com a millor? Pel model escollit ajustat amb totes les dades, calculeu les previsions amb intervals de confiança pel proper any**
 
-En primer lugar, comparamos AIC y BIC y vemos que el Modelo 2 tiene un mejor AIC y el Modelo 1 tiene un mejor BIC. Teniendo en cuenta que el BIC es más estricto y que la diferencia entre los dos BIC es considerablemente superior a la diferenncia entre los dos AIC, consideraremos que para este apartado el Modelo 1 es mejor.
+En primer lugar, comparamos AIC y BIC y vemos que el modelo 2 tiene un mejor AIC y el modelo 1 tiene un mejor BIC. Teniendo en cuenta que el BIC es más estricto y que la diferencia entre los dos BIC es considerablemente superior a la diferencia entre los dos AIC, consideraremos que para este apartado el modelo 1 es mejor.
 
 En segundo lugar, si nos fijamos en el RMSPE y el MAPE, ambos son inferiores para el primer modelo.
 
-Finalmente, la media de la amplitud de los intervalos de confianza es prácticamente idéntica, siendo ligeramente superior para el Modelo 1.
+Finalmente, la media de la amplitud de los intervalos de confianza es prácticamente idéntica, siendo ligeramente superior para el modelo 1.
 
 Teniendo en cuenta estos factores se llega a la conclusión de que el primer modelo es un mejor modelo.
 
@@ -488,8 +485,14 @@ prediction = predict(m1, n.ahead=12)
 pr = prediction$pred
 tl = pr - prediction$se # límite inferior
 tu = pr + prediction$se # límite superior
+
+
 ts.plot(lnser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
 type="o"); abline(v=2013:2020,lty=3,col=4)
+
+myforecast <- forecast(m1, h=12)
+plot(myforecast, xlim=c(2013,2020))
+plot_forecast(myforecast)
 ```
 
 .
