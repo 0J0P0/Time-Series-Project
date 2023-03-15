@@ -26,7 +26,9 @@ library(TSstudio)
 
 # Introducción
 
-(propósito)
+El propósito del estudio del proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades. 
+
+Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA, así como también la incorporación del tratamiento de observaciones atípicas.
 
 
 ## Descripción Serie Temporal
@@ -34,7 +36,7 @@ library(TSstudio)
 (descripción serie, variables, tamaño de la muestra, método de recogida de datos)
 
 ```{r}
-ser = ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
+ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 ```
 
 
@@ -46,6 +48,102 @@ ts_plot(ser, slider=FALSE, color='darkblue',
 layout(paper_bgcolor = "lightgrey", plot_bgcolor = "lightgrey",
        font = list(color = "black"))
 ```
+
+```{r}
+ds <- decompose(ser)
+
+trace1 <- list(
+  name = "Time Series", 
+  type = "scatter", 
+  x = time(ser), 
+  y = ds$x, 
+  xaxis = "x1", 
+  yaxis = "y1"
+)
+trace2 <- list(
+  name = "Trend", 
+  type = "scatter", 
+  x = time(ser), 
+  y = ds$trend, 
+  xaxis = "x2", 
+  yaxis = "y2"
+)
+trace3 <- list(
+  name = "Seasonal", 
+  type = "scatter", 
+  x = time(ser), 
+  y = ds$seasonal, 
+  xaxis = "x3", 
+  yaxis = "y3"
+)
+trace4 <- list(
+  name = "Random", 
+  type = "scatter", 
+  x = time(ser), 
+  y = ds$random, 
+  xaxis = "x4", 
+  yaxis = "y4"
+)
+
+```
+
+```{r}
+data <- list(trace1, trace2, trace3, trace4)
+layout <- list(
+  title = "Decomposed Time series", 
+  xaxis1 = list(
+    anchor = "y1", 
+    domain = c(0.0, 1.0)
+  ), 
+  xaxis2 = list(
+    anchor = "y2", 
+    domain = c(0.0, 1.0)
+  ), 
+  xaxis3 = list(
+    anchor = "y3", 
+    domain = c(0.0, 1.0)
+  ), 
+  xaxis4 = list(
+    anchor = "y4", 
+    domain = c(0.0, 1.0)
+  ), 
+  yaxis1 = list(
+    anchor = "x1", 
+    domain = c(0.999999, 1.0)
+  ), 
+  yaxis2 = list(
+    anchor = "x2", 
+    domain = c(0.5375, 0.73125)
+  ), 
+  yaxis3 = list(
+    anchor = "x3", 
+    domain = c(0.26875, 0.4625)
+  ), 
+  yaxis4 = list(
+    anchor = "x4", 
+    domain = c(0.0, 0.19375)
+  )
+)
+p <- plot_ly()
+p <- p %>% add_trace(p, name=trace1$name, type=trace1$type, x=trace1$x, y=trace1$y,
+               xaxis=trace1$xaxis, yaxis=trace1$yaxis, mode='lines')
+p <- p %>% add_trace(p, name=trace2$name, type=trace2$type, x=trace2$x, y=trace2$y, 
+               xaxis=trace2$xaxis, yaxis=trace2$yaxis, mode='lines')
+p <- p %>% add_trace(p, name=trace3$name, type=trace3$type, x=trace3$x, y=trace3$y,
+               xaxis=trace3$xaxis, yaxis=trace3$yaxis, mode='lines')
+p <- p %>% add_trace(p, name=trace4$name, type=trace4$type, x=trace4$x, y=trace4$y, 
+               xaxis=trace4$xaxis, yaxis=trace4$yaxis, mode='lines')
+p <- p %>% layout(p, title=layout$title,
+            xaxis1=layout$xaxis1, xaxis2=layout$xaxis2, xaxis3=layout$xaxis3,
+            xaxis4=layout$xaxis4, yaxis1=layout$yaxis1, yaxis2=layout$yaxis2, 
+            yaxis3=layout$yaxis3, yaxis4=layout$yaxis4)
+p
+```
+
+
+
+
+
 
 ## Motivación
 
