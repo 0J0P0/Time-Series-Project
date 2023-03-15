@@ -1,0 +1,191 @@
+---
+title: "Project"
+author: "Juan Pablo Zaldivar && Enric Millan"
+date: "2023-03-14"
+output: html_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+library(car)
+library(zoo)
+library(plotly)
+library(ggplot2)
+library(forecast)
+library(ggfortify)
+library(TSstudio)
+```
+
+
+# Titulo
+
+...
+
+# Indice
+
+...
+
+# Introducción
+
+(propósito)
+
+
+## Descripción Serie Temporal
+
+(descripción serie, variables, tamaño de la muestra, método de recogida de datos)
+
+```{r}
+ser = ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
+```
+
+
+```{r}
+ts_plot(ser, slider=FALSE, color='darkblue',
+        title="Total exportations in Spain",
+        Ytitle="Thousands million euros",
+        Xtitle="Time", Xgrid=TRUE, Ygrid=TRUE) %>%
+layout(paper_bgcolor = "lightgrey", plot_bgcolor = "lightgrey",
+       font = list(color = "black"))
+```
+
+## Motivación
+
+...
+
+## Metodología
+
+...
+
+## Descripción sintética
+
+...
+
+# Resultados e interpretación
+
+...
+
+## Identificación
+
+...
+
+### Transformación de la serie
+
+...
+
+#### Variancia constante
+
+...
+
+#### Patrón estacional
+
+...
+
+#### Media constante
+
+...
+
+### Serie estacionaria
+
+...
+
+### Modelos propuestos
+
+...
+
+### Estimación modelo 1
+
+...
+
+### Estimación modelo 2
+
+...
+
+## Validación
+
+...
+
+### Variancia constante de residuos
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+### Hipótesis de normalidad de residuos
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+### Independencia de residuos
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+### Propiedad de causalidad y/o estacionalidad
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+### Estabilidad
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+## Previsiones
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+## Tratamiento de atípicos
+
+#### Modelo 1
+
+...
+
+#### Modelo 2
+
+# Conclusiones y discusión
+
+...
+
+# Bibliografía
+
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.
