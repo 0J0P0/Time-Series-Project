@@ -8,3 +8,4 @@
 - [Colours](https://htmlcolorcodes.com/)
 - [TSstudio - Useful for more detailed plots](https://github.com/RamiKrispin/TSstudio)
 - [Plotly](https://plotly.com/r/)
+- [Graphs](https://r-graph-gallery.com/index.html)
