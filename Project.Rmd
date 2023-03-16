@@ -26,7 +26,7 @@ library(TSstudio)
 
 # Introducción
 
-El propósito del estudio del proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades. 
+El propósito al estudio de este proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades. 
 
 Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA, así como también la incorporación del tratamiento de observaciones atípicas.
 
@@ -45,8 +45,7 @@ ts_plot(ser, slider=FALSE, color='darkblue',
         title="Total exportations in Spain",
         Ytitle="Thousands million euros",
         Xtitle="Time", Xgrid=TRUE, Ygrid=TRUE) %>%
-layout(paper_bgcolor = "lightgrey", plot_bgcolor = "lightgrey",
-       font = list(color = "black"))
+layout(plot_bgcolor = "#e5ecf6", font = list(color = "black"))
 ```
 
 ```{r}
@@ -85,7 +84,7 @@ p <- p %>% add_trace(p, name=trace3$name, x=trace3$x, y=trace3$y,
                xaxis=trace3$xaxis, yaxis=trace3$yaxis, mode='lines')
 p <- p %>% add_trace(p, name=trace4$name, x=trace4$x, y=trace4$y, 
                xaxis=trace4$xaxis, yaxis=trace4$yaxis, mode='lines')
-p <- p %>% layout(p, title=ly$title,
+p <- p %>% layout(p, title=ly$title, plot_bgcolor = "#e5ecf6",
             xaxis1=ly$xaxis1, xaxis2=ly$xaxis2, xaxis3=ly$xaxis3,
             xaxis4=ly$xaxis4, yaxis1=ly$yaxis1, yaxis2=ly$yaxis2, 
             yaxis3=ly$yaxis3, yaxis4=ly$yaxis4)
@@ -99,6 +98,48 @@ decompose(ser) %>% autoplot()
 
 
 
+```{r}
+library(plotly)
+library(forecast)
+
+# Load sample data
+data <- AirPassengers
+
+# Convert the data to a time series object
+ts_data <- ts(data, frequency = 12, start = c(1949, 1))
+
+# Decompose the time series object using the "stl" function from the "forecast" package
+decomposed_data <- stl(ts_data, s.window="periodic")
+
+# Create a list of traces for each component of the decomposed data
+traces <- list(
+  list(x = time(ts_data), y = ts_data, name = "Original Data", type = "scatter", mode = "lines"),
+  list(x = time(ts_data), y = decomposed_data$time.series[,1], name = "Trend", type = "scatter", mode = "lines"),
+  list(x = time(ts_data), y = decomposed_data$time.series[,2], name = "Seasonal", type = "scatter", mode = "lines"),
+  list(x = time(ts_data), y = decomposed_data$time.series[,3], name = "Remainder", type = "scatter", mode = "lines")
+)
+
+
+
+# Create a subplot for each component of the decomposed data
+subplot_titles <- c("Original Data", "Trend", "Seasonal", "Remainder")
+
+
+subplot_list <- lapply(seq_along(traces), function(i) {
+  subplot(traces[[i]], title = subplot_titles[i],
+          margin = list(l=60, r=40, t=40, b=40), yaxis = paste0("y", i))
+})
+
+# Combine the subplots into a single plot with shared x-axis
+fig <- subplot(subplot_list, shareX = TRUE)
+
+# Set the layout and y-axis titles
+fig <- fig %>% layout(title = "Time Series Decomposition", xaxis = list(title = "Year"))
+fig <- fig %>% layout(yaxis = list(title = "Passengers"), yaxis2 = list(title = "Trend"), yaxis3 = list(title = "Seasonal"), yaxis4 = list(title = "Remainder"))
+
+fig
+
+```
 
 
 
