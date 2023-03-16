@@ -5,16 +5,19 @@ date: "2023-03-14"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
 ```{r, echo=FALSE, include=FALSE}
-library(car)
-library(zoo)
 library(plotly)
-library(ggplot2)
 library(forecast)
-library(ggfortify)
 library(TSstudio)
 ```
 
+```{r}
+m <- list(l = 50, r = 50, b = 100, t = 100, pad = 4)
+```
 
 # Titulo
 
@@ -26,29 +29,40 @@ library(TSstudio)
 
 # Introducción
 
-El propósito al estudio de este proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades. 
+El propósito al estudio de este proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades.
 
 Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA, así como también la incorporación del tratamiento de observaciones atípicas.
 
 ## Descripción Serie Temporal
 
-(descripción serie, variables, tamaño de la muestra, método de recogida de datos)
+La serie temporal de eleccíon para el presente proyecto contiene el total de exportaciones (en miles de millones de euros) en España. (CITA).
+
+*(descripcion serie, metodo de recogida de datos, variables)*
+
+Con un total de 240 observaciones de frecuencia mensual, recorre un periodo de 20 años. Desde el primer mes de 1990 hasta diciembre de 2018. Los valores de las observaciones están registradas en miles de millones de euros, por lo tanto, por simplicidad a la hora de graficar a partir de ahora se trabajara con decenas en términos de miles de de millones.
 
 ```{r}
 ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 ```
 
+Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
+
+A simple vista ya se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho conlleve, con alta probabilidad a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
 ```{r}
 plot_ly() %>% 
   add_trace(x=~time(ser), y=~ser,
             type = "scatter", fill="tonexty", mode="lines") %>%
   layout(title='<b> Total exportations in Spain <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
+         autosize = F, width = 900, height = 500, margin = m)
 ```
 
-```{r}
+Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
 
+En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Coincidentemente con el periodo de mayor descanso laboral en España.
+
+```{r}
 ds <- decompose(ser)
 
 p1 <- plot_ly() %>% add_trace(x = time(ds$x), y = ds$x,
@@ -63,11 +77,10 @@ p3 <- plot_ly() %>% add_trace(x = time(ds$seasonal), y = ds$seasonal,
 p4 <- plot_ly() %>% add_trace(x = time(ds$random), y = ds$random,
               type = "scatter", mode = "lines", fill="tonexty", name = "Random")
 
-subplot(p1, p2, p3, p4, nrows=4) %>% layout(title='<b> Time Series Decomposition <b>')
+subplot(p1, p2, p3, p4, nrows=4) %>%
+  layout(title='<b> Time Series Decomposition <b>',
+         autosize = F, width = 900, height = 500, margin = m)
 ```
-
-
-
 
 ## Motivación
 
@@ -188,26 +201,5 @@ subplot(p1, p2, p3, p4, nrows=4) %>% layout(title='<b> Time Series Decomposition
 # Bibliografía
 
 ...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .
