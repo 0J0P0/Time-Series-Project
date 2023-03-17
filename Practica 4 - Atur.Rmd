@@ -21,7 +21,7 @@ library(plotly)
 
 ```{r}
 # ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
-ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
+ser <- ts(read.table("../Data/Atur.dat", header=F),start=1996,freq=12)
 plot_ly() %>% 
   add_trace(x=~time(ser), y=~ser,
             type = "scatter", fill="tonexty", mode="lines") %>%
@@ -34,8 +34,6 @@ lnser <- log(ser)
 d12lnser = diff(lnser, 12)
 d1d12lnser = diff(d12lnser)
 ```
-
-...?
 
 ### Modelo 1
 
@@ -50,58 +48,40 @@ m1 <- arima(d1d12lnser, order=c(1,0,1), seasonal=list(order=c(0,0,1), period=12)
 m1
 ```
 
-...
-
 ```{r}
 cat("Is the mean significant?",
     abs(m1$coef[4]/sqrt(diag(m1$var.coef)[4])) > 2)
 ```
-
-...
 
 ```{r}
 m1 <- arima(lnser, order=c(1,1,1), seasonal=list(order=c(0,1,1), period=12))
 m1
 ```
 
-...
-
 ```{r}
 cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
 ```
 
-...
-
 ### Modelo 2
-
-SE TIENE QUE HACER LO MISMO PARA EL MODELO 2??????????????
 
 $$\mbox{ARIMA}(8,1,0)(0,1,1)_{12}$$
 
 $$(1 - \phi_1 B - \phi_2 B^2 - \phi_3 B^3 - \phi_4 B^4 - \phi_5 B^5 - \phi_6 B^6 - \phi_7 B^7 - \phi_8 B^8)(1-B)(1-B^{12})X_t = (1 + \Theta_1 B^{12})Z_t$$
-
-...
 
 ```{r}
 m2 <- arima(d1d12lnser, order=c(8,0,0), seasonal=list(order=c(0,0,1), period=12))
 m2
 ```
 
-...
-
 ```{r}
 cat("Is the mean significant?",
     abs(m2$coef[10]/sqrt(diag(m2$var.coef)[10])) > 2)
 ```
 
-...
-
 ```{r}
 m2 <- arima(lnser, order=c(8,1,0), seasonal=list(order=c(0,1,1), period=12))
 m2
 ```
-
-...
 
 ```{r}
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
@@ -396,15 +376,15 @@ Se realizan los límites de los intervalos de confianza para y mediante la funci
 
 ```{r}
 prediction1 = predict(m1_train, n.ahead=12)
-pr1 = prediction1$pred
-tl1 = pr1 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite inferior
-tu1 = pr1 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite superior
+pr1 = exp(prediction1$pred)
+tl1 = exp(prediction1$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se) # límite inferior
+tu1 = exp(prediction1$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se) # límite superior
 ```
 
 A continuación se presentan tres gráficos con la misma tendencia de predicción, simplemente con aspectos gráficos distintos. En el primero se remarcan las observaciones con los puntos circulares, mientras que en los dos siguientes se sombrea los intervalos de confianza (tanto para el 80% de significación como el 95%).
 
 ```{r}
-ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
+ts.plot(ser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
 type="o"); abline(v=2013:2019,lty=3,col=4)
 
 
@@ -413,7 +393,7 @@ plot(myforecast, xlim=c(2013,2019))
 plot_forecast(myforecast)
 ```
 
-Notetse, como era de esperar el aumento en el intervalo de confianza a medida que se alejan las predicciones de la última observación, al haber una mayor incerteza por el futuro.
+Notese, como era de esperar el aumento en el intervalo de confianza a medida que se alejan las predicciones de la última observación, al haber una mayor incerteza por el futuro.
 
 ### Modelo 2
 
@@ -421,15 +401,15 @@ Se realizan los límites de los intervalos de confianza para y mediante la funci
 
 ```{r}
 prediction2 = predict(m2_train, n.ahead=12)
-pr2 = prediction2$pred
-tl2 = pr2 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite inferior
-tu2 = pr2 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite superior
+pr2 = exp(prediction2$pred)
+tl2 = exp(prediction2$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se) # límite inferior
+tu2 = exp(prediction2$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se) # límite superior
 ```
 
 A continuación se presentan tres gráficos con la misma tendencia de predicción, simplemente con aspectos gráficos distintos. En el primero se remarcan las observaciones con los puntos circulares, mientras que en los dos siguientes se sombrea los intervalos de confianza (tanto para el 80% de significación como el 95%).
 
 ```{r}
-ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
+ts.plot(ser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
 type="o"); abline(v=2013:2019,lty=3,col=4)
 
 
@@ -438,7 +418,7 @@ plot(myforecast, xlim=c(2013,2019))
 plot_forecast(myforecast)
 ```
 
-El segundo modelo presenta unos intervalos de confianza al ser mas estrechos en comparación con el modelo anterior. Sobre todo se llega a notar más enal inicio de las predicciones.
+El segundo modelo presenta unos intervalos de confianza al ser mas estrechos en comparación con el modelo anterior. Sobre todo se llega a notar más en el inicio de las predicciones.
 
 ## 8. Medidas de capacidad de predicción
 
@@ -446,7 +426,7 @@ El segundo modelo presenta unos intervalos de confianza al ser mas estrechos en 
 
 ```{r}
 inicio=c(2017,12); last=c(2018,12);
-obs = window(lnser, start = inicio, end = last)
+obs = window(ser, start = inicio, end = last)
 ```
 
 ### Modelo 1
@@ -462,6 +442,8 @@ cat("MAPE1: ", mean(abs(obs-pr1)/obs))
 cat("RMSPE: ", sqrt(mean(((obs-pr2)/obs)^2)), "\n")
 cat("MAPE1: ", mean(abs(obs-pr2)/obs))
 ```
+
+Las medidas de predicción son menores en el primer modelo, aunque para el modelo 2 tampoco se alejan mucho. Por lo que ambos tienen una capacidad de predicción similar.
 
 ## 9. Intervalos de confianza
 
@@ -486,9 +468,9 @@ cat("Mean of IC for model 2: ",mean(tu2-tl2))
 
 Centrandose en un criterio de adecuación a los datos, el primer modelo contiene un menor número de parámetros y por lo tanto el BIC de este es mejor en coparación con el modelo 2. Sin embargo, para el objetivo de la práctica, el BIC es considerado demasiado estricto y puede despreciar algun parámetro que explique mejor las obervaciones pasadas.
 
-Signo de que no se ha de tener mucho en cuenta el BIC del modelo 1 sobre el modelo 2 es la condición de independencia de residuos. Si bien el modelo 1 tiene un mejor BIC, en el ánalisis de residuos vemos que no cumple con la independecia de los residuos, pues tanto en el ACF como en el PACF muestra un retraso que sobre pasa las bandas de confianza y por lo tanto los residuos no se comportan como un WN. En cambio, el segundo modelo explica los residuos de forma clara, de manera que los residuos cumplen con el criterio de independencia, una propiedad fundamental en el estudio de las series temporales. 
+Signo de que no se ha de tener mucho en cuenta el BIC del modelo 1 sobre el modelo 2 es la condición de independencia de residuos. Si bien el modelo 1 tiene un mejor BIC, en el ánalisis de residuos vemos que no cumple con la independecia de los residuos, pues tanto en el ACF como en el PACF muestra un retraso que sobre pasa las bandas de confianza y por lo tanto los residuos no se comportan como un WN. En cambio, el segundo modelo explica los residuos de forma clara, de manera que los residuos cumplen con el criterio de independencia, una propiedad fundamental en el estudio de las series temporales.
 
-En cuanto a las otras dos condiciones, ni la condición de normalidad ni de variancia constate de los residuos se cumple. Ya que en ambos casos los gráficos muestran signos de volatilidad en los datos, así como también un porcentaje elevado de outliers. Ambos casos son motivo para descartar las propiedades. 
+En cuanto a las otras dos condiciones, ni la condición de normalidad ni de variancia constate de los residuos se cumple. Ya que en ambos casos los gráficos muestran signos de volatilidad en los datos, así como también un porcentaje elevado de outliers. Ambos casos son motivo para descartar las propiedades.
 
 No obstante, es de mencionar que el modelo 2 no presenta una volatilidad tan elevada en los residuos. Mientras que al tener un porcentaje menor de outliers a comparación del modelo 1, un tratamiento de atípicos adecuado podría concluir en una serie temporal teórica que presente una disminución de variancia y ajustar así las predicciones.
 
@@ -496,23 +478,21 @@ Con respeto al criterio del AIC, el segundo modelo presenta un AIC menor incluso
 
 Como ambos modelos prpouestos son causales e invertibles, además de cumplir con la propiedad de estabilidad, se pasará a discutir sobre las medidas de predicción.
 
-
 En segundo lugar, si nos fijamos en el RMSPE y el MAPE, ambos son inferiores para el primer modelo. Lo cual indicaría una mejor capacidad del modelo 1. Pero considerando que los intervalos de confianza de ambos modelos son prácticamente identicos y con una media similar, tampoco se puede considerar el segundo modelo como un modelo no adecuado para la predicción puntual en un futuro. Además de que la diferencia en los resultados de la capacidad de predicción difiere en un orden de $10^{-5}$, con lo cual es razonable argumentar que estas medidas son ampliamente similares.
-
 
 Teneiendo en cuenta todos los críterios previamente detallados, se llega a la conclusión de que el modelo 2 presenta mejores carácteristicas para la serie temporal descrita. Con lo que se procede a realizar las predicciones puntuales de los 12 siguientes meses a parir de la última observación para el modelo con todas las observaciones.
 
 ```{r}
-prediction = predict(m1, n.ahead=12)
-pr = prediction$pred
-tl = pr - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se # límite inferior
-tu = pr + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se # límite superior
+prediction = predict(m2, n.ahead=12)
+pr = exp(prediction$pred)
+tl = exp(prediction$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se) # límite inferior
+tu = exp(prediction$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction$se) # límite superior
 
 
-ts.plot(lnser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
+ts.plot(ser,tl,tu,pr,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2020),
 type="o"); abline(v=2013:2020,lty=3,col=4)
 
-myforecast <- forecast(m1, h=12)
+myforecast <- forecast(m2, h=12)
 plot(myforecast, xlim=c(2013,2020))
 plot_forecast(myforecast)
 ```
