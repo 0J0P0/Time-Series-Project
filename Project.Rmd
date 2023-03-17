@@ -31,7 +31,7 @@ m <- list(l = 50, r = 50, b = 100, t = 100, pad = 4)
 
 El propósito al estudio de este proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades.
 
-Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA, así como también la incorporación del tratamiento de observaciones atípicas.
+Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA que representen la serie temporal, así como también la incorporación del tratamiento de observaciones atípicas.
 
 ## Descripción Serie Temporal
 
@@ -47,7 +47,7 @@ ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 
 Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
 
-A simple vista ya se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho conlleve, con alta probabilidad a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
+A simple vista ya se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve  a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
 ```{r}
 plot_ly() %>% 
@@ -60,7 +60,7 @@ plot_ly() %>%
 
 Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
 
-En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Coincidentemente con el periodo de mayor descanso laboral en España.
+En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
 
 ```{r}
 ds <- decompose(ser)
@@ -82,13 +82,14 @@ subplot(p1, p2, p3, p4, nrows=4) %>%
          autosize = F, width = 900, height = 500, margin = m)
 ```
 
+
 ## Motivación
 
 ...
 
 ## Metodología
 
-...
+Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins, pasando por cada una de sus etapas con el fin de ajustar un buen modelo.
 
 ## Descripción sintética
 
