@@ -16,13 +16,16 @@ library(ggplot2)
 library(forecast)
 library(ggfortify)
 library(TSstudio)
+library(plotly)
 ```
 
 ```{r}
 # ser <- ts(read.table("Atur.dat", header=F)/1000,start=1996,freq=12)
 ser <- ts(read.table("../Data/Atur.dat", header=F)/1000,start=1996,freq=12)
-# autoplot(ser, main="", ylab="", xlab="Time", ts.colour = '#45B39D', ts.geom='ribbon', ts.fill='#73C6B6'))
-ts_plot(ser, slider=TRUE, color='#73C6B6')
+plot_ly() %>% 
+  add_trace(x=~time(ser), y=~ser,
+            type = "scatter", fill="tonexty", mode="lines") %>%
+  layout(title='<b> Atur <b>', xaxis=list(title='Time'))
 
 ```
 
@@ -327,7 +330,7 @@ El modelo 2 tiene un AIC inferior (es un mejor modelo en términos del AIC) ya q
 (BIC_diff = abs(BIC(m1)-BIC(m2)))
 ```
 
-La diferencia entre los BIC es casi el triple que la diferencia entre los AIC.
+La diferencia entre los BIC es casi el triple que la diferencia entre los AIC, como comentado anteriormente.
 
 ## 6. Estabilidad del modelo
 
@@ -389,12 +392,16 @@ Como se observa, los t-ratios de los coeficientes son casi idénticos por lo que
 
 ### Modelo 1
 
+Se realizan los límites de los intervalos de confianza para y mediante la función de la libreria `forecast` se realizan las predicciones puntuales correspondientes a las próximas 12 observaciones.
+
 ```{r}
 prediction1 = predict(m1_train, n.ahead=12)
 pr1 = prediction1$pred
 tl1 = pr1 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite inferior
 tu1 = pr1 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction1$se # límite superior
 ```
+
+A continuación se presentan tres gráficos con la misma tendencia de predicción, simplemente con aspectos gráficos distintos. En el primero se remarcan las observaciones con los puntos circulares, mientras que en los dos siguientes se sombrea los intervalos de confianza (tanto para el 80% de significación como el 95%).
 
 ```{r}
 ts.plot(lnser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
@@ -406,7 +413,11 @@ plot(myforecast, xlim=c(2013,2019))
 plot_forecast(myforecast)
 ```
 
+Notetse, como era de esperar el aumento en el intervalo de confianza a medida que se alejan las predicciones de la última observación, al haber una mayor incerteza por el futuro.
+
 ### Modelo 2
+
+Se realizan los límites de los intervalos de confianza para y mediante la función de la libreria `forecast` se realizan las predicciones puntuales correspondientes a las próximas 12 observaciones.
 
 ```{r}
 prediction2 = predict(m2_train, n.ahead=12)
@@ -414,6 +425,8 @@ pr2 = prediction2$pred
 tl2 = pr2 - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite inferior
 tu2 = pr2 + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*prediction2$se # límite superior
 ```
+
+A continuación se presentan tres gráficos con la misma tendencia de predicción, simplemente con aspectos gráficos distintos. En el primero se remarcan las observaciones con los puntos circulares, mientras que en los dos siguientes se sombrea los intervalos de confianza (tanto para el 80% de significación como el 95%).
 
 ```{r}
 ts.plot(lnser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2013,2019),
@@ -424,6 +437,8 @@ myforecast <- forecast(m2_train, h=12)
 plot(myforecast, xlim=c(2013,2019))
 plot_forecast(myforecast)
 ```
+
+El segundo modelo presenta unos intervalos de confianza al ser mas estrechos en comparación con el modelo anterior. Sobre todo se llega a notar más enal inicio de las predicciones.
 
 ## 8. Medidas de capacidad de predicción
 
@@ -437,17 +452,15 @@ obs = window(lnser, start = inicio, end = last)
 ### Modelo 1
 
 ```{r}
-RMSPE1=sqrt(mean(((obs-pr1)/obs)^2)); MAPE1=mean(abs(obs-pr1)/obs)
-RMSPE1
-MAPE1
+cat("RMSPE: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
+cat("MAPE1: ", mean(abs(obs-pr1)/obs))
 ```
 
 ### Modelo 2
 
 ```{r}
-RMSPE2=sqrt(mean(((obs-pr2)/obs)^2)); MAPE2=mean(abs(obs-pr2)/obs)
-RMSPE2
-MAPE2
+cat("RMSPE: ", sqrt(mean(((obs-pr2)/obs)^2)), "\n")
+cat("MAPE1: ", mean(abs(obs-pr2)/obs))
 ```
 
 ## 9. Intervalos de confianza
@@ -457,28 +470,37 @@ MAPE2
 ### Modelo 1
 
 ```{r}
-mean_length_IC1 = mean(tu1-tl1)
-mean_length_IC1
+cat("Mean of IC for model 1: ",mean(tu1-tl1))
+
 ```
 
 ### Modelo 2
 
 ```{r}
-mean_length_IC2 = mean(tu2-tl2)
-mean_length_IC2
+cat("Mean of IC for model 2: ",mean(tu2-tl2))
 ```
 
 ## 10. Selección del modelo
 
 **Amb tota la informacio anterior, quin dels dos models proposats seleccioneu com a millor? Pel model escollit ajustat amb totes les dades, calculeu les previsions amb intervals de confiança pel proper any**
 
-En primer lugar, comparamos AIC y BIC y vemos que el modelo 2 tiene un mejor AIC y el modelo 1 tiene un mejor BIC. Teniendo en cuenta que el BIC es más estricto y que la diferencia entre los dos BIC es considerablemente superior a la diferencia entre los dos AIC, consideraremos que para este apartado el modelo 1 es mejor.
+Centrandose en un criterio de adecuación a los datos, el primer modelo contiene un menor número de parámetros y por lo tanto el BIC de este es mejor en coparación con el modelo 2. Sin embargo, para el objetivo de la práctica, el BIC es considerado demasiado estricto y puede despreciar algun parámetro que explique mejor las obervaciones pasadas.
 
-En segundo lugar, si nos fijamos en el RMSPE y el MAPE, ambos son inferiores para el primer modelo.
+Signo de que no se ha de tener mucho en cuenta el BIC del modelo 1 sobre el modelo 2 es la condición de independencia de residuos. Si bien el modelo 1 tiene un mejor BIC, en el ánalisis de residuos vemos que no cumple con la independecia de los residuos, pues tanto en el ACF como en el PACF muestra un retraso que sobre pasa las bandas de confianza y por lo tanto los residuos no se comportan como un WN. En cambio, el segundo modelo explica los residuos de forma clara, de manera que los residuos cumplen con el criterio de independencia, una propiedad fundamental en el estudio de las series temporales. 
 
-Finalmente, la media de la amplitud de los intervalos de confianza es prácticamente idéntica, siendo ligeramente superior para el modelo 1.
+En cuanto a las otras dos condiciones, ni la condición de normalidad ni de variancia constate de los residuos se cumple. Ya que en ambos casos los gráficos muestran signos de volatilidad en los datos, así como también un porcentaje elevado de outliers. Ambos casos son motivo para descartar las propiedades. 
 
-Teniendo en cuenta estos factores se llega a la conclusión de que el primer modelo es un mejor modelo.
+No obstante, es de mencionar que el modelo 2 no presenta una volatilidad tan elevada en los residuos. Mientras que al tener un porcentaje menor de outliers a comparación del modelo 1, un tratamiento de atípicos adecuado podría concluir en una serie temporal teórica que presente una disminución de variancia y ajustar así las predicciones.
+
+Con respeto al criterio del AIC, el segundo modelo presenta un AIC menor incluso al tener dos parámetros con una significación ligeramente inferior de las dos unidades en valor absoluto. Lo que demuestra que el mayor número de parámetros del modelo 2, tiene un mejor impacto a la hora de la adecuación a las observaciones que no el modelo 1 con solo tres parámetros.
+
+Como ambos modelos prpouestos son causales e invertibles, además de cumplir con la propiedad de estabilidad, se pasará a discutir sobre las medidas de predicción.
+
+
+En segundo lugar, si nos fijamos en el RMSPE y el MAPE, ambos son inferiores para el primer modelo. Lo cual indicaría una mejor capacidad del modelo 1. Pero considerando que los intervalos de confianza de ambos modelos son prácticamente identicos y con una media similar, tampoco se puede considerar el segundo modelo como un modelo no adecuado para la predicción puntual en un futuro. Además de que la diferencia en los resultados de la capacidad de predicción difiere en un orden de $10^{-5}$, con lo cual es razonable argumentar que estas medidas son ampliamente similares.
+
+
+Teneiendo en cuenta todos los críterios previamente detallados, se llega a la conclusión de que el modelo 2 presenta mejores carácteristicas para la serie temporal descrita. Con lo que se procede a realizar las predicciones puntuales de los 12 siguientes meses a parir de la última observación para el modelo con todas las observaciones.
 
 ```{r}
 prediction = predict(m1, n.ahead=12)
