@@ -50,9 +50,8 @@ Observando la serie temporal detectamos una tendencia creciente a lo largo del t
 A simple vista ya se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve  a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
 ```{r}
-plot_ly() %>% 
-  add_trace(x=~time(ser), y=~ser,
-            type = "scatter", fill="tonexty", mode="lines") %>%
+plot_ly(x=~time(ser), y=~ser,
+            type = "scatter", fill="tonexty", mode="lines") %>% 
   layout(title='<b> Total exportations in Spain <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
          autosize = F, width = 900, height = 500, margin = m)
@@ -155,12 +154,14 @@ ts_seasonal(ser, type="normal", title=" <b> Seasonality plot for Time Series <b>
 
 ```{r}
 d12ser = diff(ser,12)
-plot_ly() %>% 
+plot_ly() %>%
   add_trace(x=~time(d12ser), y=~d12ser,
-            type = "scatter", fill="tonexty", mode="lines") %>%
+            type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
+  add_trace(x=~time(d12ser), y=~mean(d12ser),
+            type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
-         autosize = F, width = 900, height = 500, margin = m)
+         autosize = F, width = 900, height = 500, margin = m) 
 ```
 
 ```{r}
@@ -172,13 +173,26 @@ ts_seasonal(d12ser, type="normal", title=" <b> Seasonality plot for Time Series 
 
 ...
 
+```{r}
+var(d12ser)
+var(diff(d12ser))
+```
+
+
 ### Serie estacionaria
 
 ...
 
+$$W_t = (1-B^{12})X_t$$
+
 ### Modelos propuestos
 
 ...
+
+```{r}
+ts_cor(d12ser, lag.max = 60)
+```
+
 
 ### Estimación modelo 1
 
