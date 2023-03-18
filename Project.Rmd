@@ -39,7 +39,7 @@ La serie temporal de eleccíon para el presente proyecto contiene el total de ex
 
 *(descripcion serie, metodo de recogida de datos, variables)*
 
-Con un total de 240 observaciones de frecuencia mensual, recorre un periodo de 20 años. Desde el primer mes de 1990 hasta diciembre de 2018. Los valores de las observaciones están registradas en miles de millones de euros, por lo tanto, por simplicidad a la hora de graficar a partir de ahora se trabajara con decenas en términos de miles de de millones.
+Con un total de 240 observaciones de frecuencia mensual, recorre un periodo de 20 años. Desde el primer mes de 1999 hasta diciembre de 2018. Los valores de las observaciones están registradas en miles de millones de euros, por lo tanto, por simplicidad a la hora de graficar a partir de ahora se trabajara con decenas en términos de miles de de millones.
 
 ```{r}
 ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
@@ -58,9 +58,10 @@ plot_ly() %>%
          autosize = F, width = 900, height = 500, margin = m)
 ```
 
-Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
+Observese en también una observación con una magnitud que sobresale en el mes de febrero de 2017. Una posible hipótesis supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto.
 
-En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
+Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara de estos resultados.
+
 
 ```{r}
 ds <- decompose(ser)
@@ -82,6 +83,10 @@ subplot(p1, p2, p3, p4, nrows=4) %>%
          autosize = F, width = 900, height = 500, margin = m)
 ```
 
+Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
+
+En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
+
 
 ## Motivación
 
@@ -89,7 +94,15 @@ subplot(p1, p2, p3, p4, nrows=4) %>%
 
 ## Metodología
 
-Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins, pasando por cada una de sus etapas con el fin de ajustar un buen modelo.
+Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins. 
+
+De manera incial se comenzará con la identificación de la serie. La cual consiste en la evaluación de la serie para aplicarle un conjunto de trasnformaciones de modo que se obtenga una serie estacionaria, sobre la cual poder prpoponer modelos adecuados. Dichas transformaciones se aplican para obtener una variancia cosntante de la serie, eliminar un posible patrón estacional de los datos y conseguir una media constante. De tal forma que sea posible proponer modelos, premiando su baja complejidad, para proceder a la estimación de sus parámetros y de la media de la serie.
+
+Siguientemente, se han de validar los modelos propuestos. Llegados a este punto, trabajaremos con dos modelos propuesto a modo de simplificación del proyecto. Para cada uno de ellos se realizarán las revisiones necesarias para validar la variancia consante de los residuos del modelo. Comprobaremos que los residuos se comporten bajo la hipótesis de normalidad como un _White Noise_. Por último se comprobará que los residuos cumplan con la condición de normalidad, considerada la de mayor relevancia al tratarse de una serie temporal.
+
+Una vez consolidados los modelos propuestos, se estudiarán las propiedades de estabilidad, invertibilidad y causalidad de cada uno. De modo que justo después se realizarán las predicciones puntuales y sus medidas de predicción del modelo.
+
+El estudio de estas predicciones se buscará afinar al aplicar un tratamiento de atípicos, en la cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. A fin de poder mejorar las predicciones en cada uno de los modelos. Para poder así, discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
 
 ## Descripción sintética
 
@@ -111,9 +124,49 @@ Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins,
 
 ...
 
+```{r}
+# Calculate the mean and variance of consecutive groups of 8-12 observations.
+m <- apply(matrix(ser, nrow=12), 2, mean)
+v <- apply(matrix(ser, nrow=12), 2, var)
+
+
+# Plot the variance against the mean of each group.
+plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
+                                  line = list(color = 'darkblue',width = 1))) %>%
+  layout(title='<b> Varience~Mean <b>',
+         xaxis=list(title='Mean'), yaxis=list(title='Variance'))
+```
+
+
+```{r}
+plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers') %>%
+  layout(title='<b> Box Plot for periods <b>',
+         xaxis=list(title='Time'), yaxis=list(title='Time Series'))
+```
+
+
+
+
 #### Patrón estacional
 
-...
+```{r}
+ts_seasonal(ser, type="normal", title=" <b> Seasonality plot for Time Series <b>")
+```
+
+```{r}
+d12ser = diff(ser,12)
+plot_ly() %>% 
+  add_trace(x=~time(d12ser), y=~d12ser,
+            type = "scatter", fill="tonexty", mode="lines") %>%
+  layout(title='<b> Time Series after seasonal differentation <b>',
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
+         autosize = F, width = 900, height = 500, margin = m)
+```
+
+```{r}
+ts_seasonal(d12ser, type="normal", title=" <b> Seasonality plot for Time Series <b>")
+```
+
 
 #### Media constante
 
