@@ -45,9 +45,6 @@ Con un total de 240 observaciones de frecuencia mensual, recorre un periodo de 2
 ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 ```
 
-Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
-
-A simple vista ya se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve  a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
 ```{r}
 plot_ly(x=~time(ser), y=~ser,
@@ -56,10 +53,14 @@ plot_ly(x=~time(ser), y=~ser,
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
          autosize = F, width = 900, height = 500, margin = m)
 ```
+Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
 
-Observese en también una observación con una magnitud que sobresale en el mes de febrero de 2017. Una posible hipótesis supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto.
+Por otro lado, a simple vista se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve  a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
-Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara de estos resultados.
+Otro hehco a destacar sobre la serie son un par de observaciones con magnitudes que sobresalen notablemente en el mes de febrero (finales de enero e inicios de febrero) de 2011 y 2017. Los datos oficiales indican que en ambos casos los principales impulsores de esta subida fueron el sector del petróleo y el gas natural, junto al sector agrícola y pesquero. ESTO NO SE SI QUITARLO -> (Una posible hipótesis para la segunda observación supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto.)
+
+
+Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara sobre estos resultados.
 
 
 ```{r}
