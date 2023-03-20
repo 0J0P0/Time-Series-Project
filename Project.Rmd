@@ -49,8 +49,7 @@ ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 plot_ly(x=~time(ser), y=~ser,
             type = "scatter", fill="tonexty", mode="lines") %>% 
   layout(title='<b> Total exportations in Spain <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
-         autosize = F, width = 900, height = 500, margin = m)
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
 ```
 Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
 
@@ -77,8 +76,7 @@ p4 <- plot_ly() %>% add_trace(x = time(ds$random), y = ds$random,
               type = "scatter", mode = "lines", fill="tonexty", name = "Random")
 
 subplot(p1, p2, p3, p4, nrows=4) %>%
-  layout(title='<b> Time Series Decomposition <b>',
-         autosize = F, width = 900, height = 500, margin = m)
+  layout(title='<b> Time Series Decomposition <b>')
 ```
 
 Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
@@ -171,8 +169,7 @@ plot_ly() %>%
   add_trace(x=~time(d12ser), y=~mean(d12ser),
             type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
-         autosize = F, width = 900, height = 500, margin = m) 
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
 ```
 
 Tras la transformación se puede afirmar que las subseries presentan una misma media, constante horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo, con lo que se ha eliminado el patrón estacional.
@@ -206,9 +203,8 @@ plot_ly() %>%
             type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
   add_trace(x=~time(d12ser), y=~mean(d12ser),
             type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
-  layout(title='<b> Time Series after seasonal differentation <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'),
-         autosize = F, width = 900, height = 500, margin = m) 
+  layout(title='<b> Stationary Time Series <b>',
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
 ```
 
 
