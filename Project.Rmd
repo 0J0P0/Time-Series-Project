@@ -10,8 +10,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo=FALSE)
 ```
 
 ```{r}
-library(MASS)
-library(car)
 library(plotly)
 library(forecast)
 library(TSstudio)
@@ -134,11 +132,11 @@ plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
          xaxis=list(title='Mean'), yaxis=list(title='Variance'))
 ```
 
-Vease que no hay un claro aumento de la variancia entre los valores inciales y finales de la serie. Se podría razonar que todo el conjunto de puntos mantiene la misma dispersión.
+Vease que hay un aumento de la variancia entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría razonar que todo el conjunto de puntos mantienen la misma dispersión, una transformación `Box-Cox` podría ser útil para este caso.
 
 Para evitar la posible influencia de valores atípicos, también se realiza un boxplot para cada año de la serie, de modo que, idealmente, la altura del IQR de cada caja tiene que se aproximadamente la misma.
 
-Para el caso de esta serie temporal observamos que si se cumple esta condición, por lo que consideramos no necesaria una transformación logaritmica para la serie.
+Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie, pero no se puede validar una variancia constante.
 
 ```{r}
 plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers') %>%
@@ -146,10 +144,18 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers'
          xaxis=list(title='Time'), yaxis=list(title='Time Series'))
 ```
 
+Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación del tipo: 
+
+$$\frac{X_t^{\lambda}-1}{\lambda}$$
+
 ```{r}
 lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper = 2)
 bcser = (ser^lambda-1)/lambda
 ```
+
+(EXPLICACION DEL METODO)
+
+Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
 ```{r}
 m <- apply(matrix(bcser, nrow=12), 2, mean)
@@ -162,6 +168,21 @@ plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
 ```
 
 
+```{r}
+plot_ly(x=~floor(time(bcser)), y=~bcser, type='box', boxpoints = 'suspectedoutliers') %>%
+  layout(title='<b> Box Plot for periods <b>',
+         xaxis=list(title='Time'), yaxis=list(title='Time Series'))
+```
+
+```{r}
+plot_ly(x=~time(bcser), y=~bcser,
+            type = "scatter", fill="tonexty", mode="lines") %>% 
+  layout(title='<b> Time series after Box-Cox transformation <b>',
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+```
+
+Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo.
+
 #### Patrón estacional
 
 Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera ... La segunda muestra la distribución de las observaciones por meses.
@@ -172,9 +193,9 @@ ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>"
 
 Para cada año se observa una clara relación anual, en donde, como se habia comentado anteriormente, en el mes de agosto se ve una clara caida de los valores de las observaciones. Lo que conlleva a tener un IQR por debajo del resto. 
 
-Nos damos cuenta tmabién de que el tercer mes del año tiene muetsras con valores que aumentan y seguidamente caen ligeramente en el abril o viceversa. (EXPLICACION). Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico.
+Nos damos cuenta tmabién de que el tercer mes del año tiene muetsras con valores que aumentan y seguidamente caen ligeramente en el abril o viceversa. Posiblemente este fenómeno este relacionado con los efectos de calendario, ya que por esos meses se encuentra la Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurrio en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico.
 
-Se procede a realizar la diferenciación estacional de orden 12.
+Se procede a realizar la diferenciación estacional de orden 12. Con lo que el valor del parámetro $D$ toma el valor de la unidad.
 
 $$(1-B^{12})X_t$$
 
@@ -184,7 +205,7 @@ plot_ly() %>%
   add_trace(x=~time(d12bcser), y=~d12bcser,
             type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
   add_trace(x=~time(d12bcser), y=~mean(d12bcser),
-            type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
+            type = "scatter", mode="lines", name='Mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
 ```
@@ -198,7 +219,7 @@ ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <
 
 #### Media constante
 
-Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la variabilidad como constante. Aunque para comporbar se compararán las variancia de la serie sin patrón estacional y su variancia tras una diferenciación regular.
+Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la variabilidad como constante. Aunque para comprobar se compararán la variancia de la serie con patrón estacional y su variancia tras una diferenciación regular.
 
 ```{r}
 var(d12bcser)
@@ -206,7 +227,7 @@ var(diff(d12bcser))
 var(diff(diff(d12bcser)))
 ```
 
-Como la variancia de la serie aumenta tras la diferenciación regular, se identifica que se ha realizado una sobrediferenciación, con lo que no es necesaria la aplicación de la trasnformación para asegurar media constante.
+Como la variancia de la serie aumenta tras la segunda diferenciación regular, se identifica que se ha realizado una sobrediferenciación, con lo que no es necesaria la aplicación de la segunda trasnformación para asegurar media constante, solo basta con la primera. Obteniendo el parámetro $d=1$.
 
 ```{r}
 d1d12bcser = diff(d12bcser)
@@ -217,14 +238,14 @@ d1d12bcser = diff(d12bcser)
 
 Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
 
-$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda}$$
+$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \lambda=0.395$$
 
 ```{r}
 plot_ly() %>%
   add_trace(x=~time(d1d12bcser), y=~d1d12bcser,
             type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
   add_trace(x=~time(d1d12bcser), y=~mean(d1d12bcser),
-            type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
+            type = "scatter", mode="lines", name='Mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
 ```
