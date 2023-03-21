@@ -10,6 +10,8 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo=FALSE)
 ```
 
 ```{r}
+library(MASS)
+library(car)
 library(plotly)
 library(forecast)
 library(TSstudio)
@@ -144,29 +146,44 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers'
          xaxis=list(title='Time'), yaxis=list(title='Time Series'))
 ```
 
+```{r}
+lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper = 2)
+bcser = (ser^lambda-1)/lambda
+```
+
+```{r}
+m <- apply(matrix(bcser, nrow=12), 2, mean)
+v <- apply(matrix(bcser, nrow=12), 2, var)
+
+plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
+                                  line = list(color = 'darkblue',width = 1))) %>%
+  layout(title='<b> Varience~Mean <b>',
+         xaxis=list(title='Mean'), yaxis=list(title='Variance'))
+```
+
 
 #### Patrón estacional
 
 Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera ... La segunda muestra la distribución de las observaciones por meses.
 
 ```{r}
-ts_seasonal(ser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 ```
 
 Para cada año se observa una clara relación anual, en donde, como se habia comentado anteriormente, en el mes de agosto se ve una clara caida de los valores de las observaciones. Lo que conlleva a tener un IQR por debajo del resto. 
 
-Nos damos cuenta tmabién de que el tercer mes del año tiene muetsras con valores que aumentan y seguidamente caen ligeramente en el abril. (EXPLICACION). Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico.
+Nos damos cuenta tmabién de que el tercer mes del año tiene muetsras con valores que aumentan y seguidamente caen ligeramente en el abril o viceversa. (EXPLICACION). Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico.
 
 Se procede a realizar la diferenciación estacional de orden 12.
 
 $$(1-B^{12})X_t$$
 
 ```{r}
-d12ser = diff(ser,12)
+d12bcser = diff(bcser,12)
 plot_ly() %>%
-  add_trace(x=~time(d12ser), y=~d12ser,
+  add_trace(x=~time(d12bcser), y=~d12bcser,
             type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
-  add_trace(x=~time(d12ser), y=~mean(d12ser),
+  add_trace(x=~time(d12bcser), y=~mean(d12bcser),
             type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
@@ -175,7 +192,7 @@ plot_ly() %>%
 Tras la transformación se puede afirmar que las subseries presentan una misma media, constante horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo, con lo que se ha eliminado el patrón estacional.
 
 ```{r}
-ts_seasonal(d12ser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 ```
 
 
@@ -184,24 +201,29 @@ ts_seasonal(d12ser, type="all", title=" <b> Seasonality plot for Time Series <b>
 Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la variabilidad como constante. Aunque para comporbar se compararán las variancia de la serie sin patrón estacional y su variancia tras una diferenciación regular.
 
 ```{r}
-var(d12ser)
-var(diff(d12ser))
+var(d12bcser)
+var(diff(d12bcser))
+var(diff(diff(d12bcser)))
 ```
 
 Como la variancia de la serie aumenta tras la diferenciación regular, se identifica que se ha realizado una sobrediferenciación, con lo que no es necesaria la aplicación de la trasnformación para asegurar media constante.
+
+```{r}
+d1d12bcser = diff(d12bcser)
+```
 
 
 ### Serie estacionaria
 
 Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
 
-$$W_t = (1-B^{12})X_t$$
+$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda}$$
 
 ```{r}
 plot_ly() %>%
-  add_trace(x=~time(d12ser), y=~d12ser,
+  add_trace(x=~time(d1d12bcser), y=~d1d12bcser,
             type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
-  add_trace(x=~time(d12ser), y=~mean(d12ser),
+  add_trace(x=~time(d1d12bcser), y=~mean(d1d12bcser),
             type = "scatter", mode="lines", name='Time Series mean', line=list(color='#481567FF')) %>%
   layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
@@ -213,7 +235,23 @@ plot_ly() %>%
 ...
 
 ```{r}
-ts_cor(d12ser, lag.max = 60)
+ts_cor(d1d12bcser, lag.max = 72)
+```
+
+AR(p=2) AR(P=2) MA(q=4) MA(Q=6)
+
+ARMA(1,1) ARMA(1,2) ARMA(2,1)
+
+
+```{r}
+arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(0,0,6), period=12))
+cat("---------------------------------------------------------------------")
+arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
+cat("---------------------------------------------------------------------")
+arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
+cat("---------------------------------------------------------------------")
+arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
+
 ```
 
 
@@ -221,9 +259,52 @@ ts_cor(d12ser, lag.max = 60)
 
 ...
 
+```{r}
+m1 = arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
+m1
+```
+
+```{r}
+cat("Is the mean significant?",abs(m1$coef[8]/sqrt(diag(m1$var.coef)[8])) > 2)
+```
+
+```{r}
+m1 = arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12))
+m1
+```
+
+```{r}
+cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
+```
+
+```{r}
+arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12),
+           fixed=c(NA,NA,0,NA,NA,NA,NA))
+```
+
+
 ### Estimación modelo 2
 
 ...
+
+```{r}
+m2 = arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
+m2
+```
+
+```{r}
+cat("Is the mean significant?",abs(m2$coef[7]/sqrt(diag(m2$var.coef)[7])) > 2)
+```
+
+```{r}
+m2 = arima(bcser, order=c(2,1,0), seasonal=list(order=c(2,1,2), period=12))
+m2
+```
+
+```{r}
+cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
+```
+
 
 ## Validación
 
@@ -235,7 +316,43 @@ ts_cor(d12ser, lag.max = 60)
 
 ...
 
+```{r}
+resi1 <- resid(m1)
+plot(resi1); abline(h=0); abline(h=c(-3*sd(resi1),3*sd(resi1)),lty=3,col=4)
+
+plot_ly(x=~time(bcser), y=~resi1,
+            type = "scatter", fill="tonexty", mode="lines") %>%
+  layout(title='<b> Residuals of model 1 <b>',
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) %>%
+  add_lines(x=~time(bcser), y=~-3*sd(resi1), fill=F, line=list(color='red', dash='dash')) %>%
+  add_lines(x=~time(bcser), y=~3*sd(resi1), fill=F, line=list(color='red', dash='dash'))
+
+```
+
+```{r}
+scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
+```
+
+
 #### Modelo 2
+
+```{r}
+resi2 <- resid(m2)
+plot(resi2); abline(h=0); abline(h=c(-3*sd(resi2),3*sd(resi2)),lty=3,col=4)
+
+plot_ly(x=~time(bcser), y=~resi2,
+            type = "scatter", fill="tonexty", mode="lines") %>%
+  layout(title='<b> Residuals of model 2 <b>',
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) %>%
+  add_lines(x=~time(bcser), y=~-3*sd(resi2), fill=F, line=list(color='red', dash='dash')) %>%
+  add_lines(x=~time(bcser), y=~3*sd(resi2), fill=F, line=list(color='red', dash='dash'))
+
+```
+
+
+```{r}
+scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
+```
 
 ### Hipótesis de normalidad de residuos
 
@@ -256,6 +373,12 @@ ts_cor(d12ser, lag.max = 60)
 ### Propiedad de causalidad y/o estacionalidad
 
 #### Modelo 1
+
+```{r}
+m1<-arima(d12ser, order=c(1,0,2), seasonal=list(order=c(4,0,0), period=12))
+plot(m1)
+```
+
 
 ...
 
