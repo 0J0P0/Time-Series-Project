@@ -51,6 +51,7 @@ plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         fill="tozeroy",
         mode="lines",
+        line = list(color = "#2a788e"),
         fillcolor="rgba(42, 120, 142, 0.5)"
         ) %>% 
   layout(title='<b> Total exportations in Spain <b>',
@@ -221,6 +222,7 @@ plot_ly(x=~time(bcser), y=~bcser,
         type = "scatter",
         fill="tozeroy",
         mode="lines",
+        line = list(color = "#2a788e"),
         fillcolor="rgba(42, 120, 142, 0.5)"
         ) %>% 
   layout(title='<b> Time series after Box-Cox transformation <b>',
@@ -256,6 +258,7 @@ plot_ly() %>%
             type = "scatter",
             fill="tonexty",
             mode="lines",
+            line = list(color = "#2a788e"),
             fillcolor="rgba(42, 120, 142, 0.5)",
             name='Time Series'
             ) %>%
@@ -312,6 +315,7 @@ plot_ly() %>%
             type = "scatter",
             fill="tonexty",
             mode="lines",
+            line = list(color = "#2a788e"),
             fillcolor="rgba(42, 120, 142, 0.5)",
             name='Time Series'
             ) %>%
@@ -449,18 +453,19 @@ plot_ly() %>%
   add_trace(x=~time(bcser), y=~resi1,
             type = "scatter",
             fill="tonexty",
+            line = list(color = "#2a788e"),
             fillcolor="rgba(42, 120, 142, 0.5)",
             mode="lines",
             name='Residuals of model 1'
             ) %>%
   add_lines(x=~time(bcser), y=~-3*sd(resi1),
             fill=F,
-            line=list(color='#22a884',dash='dot'),
+            line=list(color='#440154',dash='dot'),
             name='Lower IC limit'
             ) %>%
   add_lines(x=~time(bcser), y=~3*sd(resi1),
             fill=F,
-            line=list(color='#22a884', dash='dot'),
+            line=list(color='#440154', dash='dot'),
             name="Upper IC limit"
             ) %>%
   layout(title='<b> Residuals of model 1 <b>',
@@ -493,18 +498,19 @@ plot_ly() %>%
   add_trace(x=~time(bcser), y=~resi2,
             type = "scatter",
             fill="tonexty",
+            line = list(color = "#2a788e"),
             fillcolor="rgba(42, 120, 142, 0.5)",
             mode="lines",
             name='Residuals of model 2'
             ) %>%
   add_lines(x=~time(bcser), y=~-3*sd(resi2),
             fill=F,
-            line=list(color='#22a884',dash='dot'),
+            line=list(color='#440154',dash='dot'),
             name='Lower IC limit'
             ) %>%
   add_lines(x=~time(bcser), y=~3*sd(resi2),
             fill=F,
-            line=list(color='#22a884', dash='dot'),
+            line=list(color='#440154', dash='dot'),
             name="Upper IC limit"
             ) %>%
   layout(title='<b> Residuals of model 2 <b>',
@@ -560,8 +566,8 @@ d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 plot_ly() %>%
   add_histogram(x=~resi1,
         name="Model 1 residuals",
-        marker = list(color = "blue",
-                      line = list(color = "darkblue", width = 2))
+        marker = list(color = "#22a884",
+                      line = list(color = "#2a788e", width = 2))
         ) %>%
   add_trace(x=~d$x, y=~d$y,
             type = 'scatter',
