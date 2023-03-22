@@ -257,11 +257,16 @@ plot_ly() %>%
 
 ### Modelos propuestos
 
-...
+Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de la serie tras haberle aplicado las transformaciones.
 
 ```{r}
 ts_cor(d1d12bcser, lag.max = 72)
 ```
+
+Si bien es cierto que se observar cierta tendencia logarítmica en el PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente.
+
+Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y AR(4). Es favorable escoger AR(4) ya que si resulta haber parámetros no significativos, estos siempre se pueden eliminar del ajuste. Para la parte regular resulta muy evdiente que la mejor opción es un AR(2).
+
 
 AR(p=2) AR(P=2) MA(q=4) MA(Q=6)
 
