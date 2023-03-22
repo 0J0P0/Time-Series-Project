@@ -48,9 +48,15 @@ ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 
 ```{r}
 plot_ly(x=~time(ser), y=~ser,
-            type = "scatter", fill="tonexty", mode="lines") %>% 
+        type = "scatter",
+        fill="tozeroy",
+        mode="lines",
+        fillcolor="rgba(42, 120, 142, 0.5)"
+        ) %>% 
   layout(title='<b> Total exportations in Spain <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')
+         )
 ```
 Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
 
@@ -65,16 +71,33 @@ Se ha de aclarar que estas explicaciones se realizan en base a investigaciones p
 ds <- decompose(ser)
 
 p1 <- plot_ly() %>% add_trace(x = time(ds$x), y = ds$x,
-              type = "scatter", mode = "lines", fill="tonexty", name = "Original Time Series")
-
+                              type = "scatter",
+                              mode = "lines",
+                              fill="tonexty",
+                              line = list(color = "rgb(34, 168, 132)"),
+                              fillcolor="rgba(34, 168, 132, 0.5)",
+                              name = "Original Time Series")
 p2 <- plot_ly() %>% add_trace(x = time(ds$trend), y = ds$trend,
-              type = "scatter", mode = "lines", fill="tonexty", name = "Trend")
-
+                              type = "scatter",
+                              mode = "lines",
+                              fill="tonexty",
+                              line = list(color = "rgb(42, 120, 142)"),
+                              fillcolor="rgba(42, 120, 142, 0.5)",
+                              name = "Trend")
 p3 <- plot_ly() %>% add_trace(x = time(ds$seasonal), y = ds$seasonal,
-              type = "scatter", mode = "lines", fill="tonexty", name = "Seasonal")
-
+                              type = "scatter",
+                              mode = "lines",
+                              fill="tonexty",
+                              line = list(color = "rgb(65, 68, 135)"),
+                              fillcolor="rgba(65, 68, 135, 0.5)",
+                              name = "Seasonal")
 p4 <- plot_ly() %>% add_trace(x = time(ds$random), y = ds$random,
-              type = "scatter", mode = "lines", fill="tonexty", name = "Random")
+                              type = "scatter",
+                              mode = "lines",
+                              fill="tonexty",
+                              line = list(color = "rgb(68, 1, 84)"),
+                              fillcolor="rgba(68, 1, 84, 0.5)",
+                              name = "Random")
 
 subplot(p1, p2, p3, p4, nrows=4) %>%
   layout(title='<b> Time Series Decomposition <b>')
@@ -127,10 +150,14 @@ Para satisfacer la condición de variancia constante, la dispersión de los punt
 m <- apply(matrix(ser, nrow=12), 2, mean)
 v <- apply(matrix(ser, nrow=12), 2, var)
 
-plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
-                                  line = list(color = 'darkblue',width = 1))) %>%
+plot_ly(x=~m, y=~v,
+        marker = list(size = 7,
+                      color = '#2a788e',
+                      line = list(color = '#414487',width = 1))
+        ) %>%
   layout(title='<b> Varience~Mean <b>',
-         xaxis=list(title='Mean'), yaxis=list(title='Variance'))
+         xaxis=list(title='Mean'),
+         yaxis=list(title='Variance'))
 ```
 
 Vease que hay un aumento de la variancia entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría llegar a razonar y aceptar que todo el conjunto de puntos mantienen una dispersión similar, una transformación *Box-Cox* podría ser útil para este caso.
@@ -140,9 +167,14 @@ Para evitar la posible influencia de valores atípicos, también se realiza un b
 Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie pero si que es notable en ciertos casos, por lo que no se puede validar que haya una variancia constante en la serie original.
 
 ```{r}
-plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers') %>%
+plot_ly(x=~floor(time(ser)), y=~ser, type='box',
+        boxpoints = 'suspectedoutliers',
+        fillcolor="#2a788e",
+        line=list(color="#414487")
+        ) %>%
   layout(title='<b> Box Plot for periods <b>',
-         xaxis=list(title='Time'), yaxis=list(title='Time Series'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='Time Series'))
 ```
 
 Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no mejora la condición de la variancia y no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
@@ -162,24 +194,39 @@ Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 m <- apply(matrix(bcser, nrow=12), 2, mean)
 v <- apply(matrix(bcser, nrow=12), 2, var)
 
-plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
-                                  line = list(color = 'darkblue',width = 1))) %>%
+plot_ly(x=~m, y=~v,
+        marker = list(size = 7,
+                      color = '#2a788e',
+                      line = list(color = '#414487',width = 1))
+        ) %>%
   layout(title='<b> Varience~Mean <b>',
-         xaxis=list(title='Mean'), yaxis=list(title='Variance'))
+         xaxis=list(title='Mean'),
+         yaxis=list(title='Variance'))
 ```
 
 
 ```{r}
-plot_ly(x=~floor(time(bcser)), y=~bcser, type='box', boxpoints = 'suspectedoutliers') %>%
+plot_ly(x=~floor(time(bcser)), y=~bcser, type='box',
+        boxpoints = 'suspectedoutliers',
+        fillcolor="#2a788e",
+        line=list(color="#414487")
+        ) %>%
   layout(title='<b> Box Plot for periods <b>',
-         xaxis=list(title='Time'), yaxis=list(title='Time Series'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='Time Series'))
 ```
 
 ```{r}
 plot_ly(x=~time(bcser), y=~bcser,
-            type = "scatter", fill="tonexty", mode="lines") %>% 
+        type = "scatter",
+        fill="tozeroy",
+        mode="lines",
+        fillcolor="rgba(42, 120, 142, 0.5)"
+        ) %>% 
   layout(title='<b> Time series after Box-Cox transformation <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')
+         )
 ```
 
 Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varianza y media vemos que la primera no toma una tendencia en función de la segunda.
@@ -206,12 +253,21 @@ $$(1-B^{12})X_t$$
 d12bcser = diff(bcser,12)
 plot_ly() %>%
   add_trace(x=~time(d12bcser), y=~d12bcser,
-            type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
   add_trace(x=~time(d12bcser), y=~mean(d12bcser),
-            type = "scatter", mode="lines", name='Mean',
-            line=list(color='#481567FF', dash='dash')) %>%
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')) 
 ```
 
 ```{r}
@@ -253,11 +309,21 @@ $$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \lambda≃0.395$$
 ```{r}
 plot_ly() %>%
   add_trace(x=~time(d1d12bcser), y=~d1d12bcser,
-            type = "scatter", fill="tonexty", mode="lines", name='Time Series') %>%
-  add_trace(x=~time(d1d12bcser), y=~mean(d1d12bcser),
-            type = "scatter", mode="lines", name='Mean', line=list(color='#481567FF', dash='dash')) %>%
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
+  add_trace(x=~time(d12bcser), y=~mean(d12bcser),
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
   layout(title='<b> Stationary Time Series <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')) 
 ```
 
 
@@ -380,14 +446,26 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 resi1 <- resid(m1)
 
 plot_ly() %>%
-  add_trace(x=~time(bcser), y=~resi1, type = "scatter", fill="tonexty",
-        mode="lines",name='Residuals of model 1') %>%
-  add_lines(x=~time(bcser), y=~-3*sd(resi1), fill=F,
-            line=list(color='red',dash='dot'), name='Lower IC limit') %>%
-  add_lines(x=~time(bcser), y=~3*sd(resi1), fill=F,
-            line=list(color='red', dash='dot'), name="Upper IC limit") %>%
+  add_trace(x=~time(bcser), y=~resi1,
+            type = "scatter",
+            fill="tonexty",
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            mode="lines",
+            name='Residuals of model 1'
+            ) %>%
+  add_lines(x=~time(bcser), y=~-3*sd(resi1),
+            fill=F,
+            line=list(color='#22a884',dash='dot'),
+            name='Lower IC limit'
+            ) %>%
+  add_lines(x=~time(bcser), y=~3*sd(resi1),
+            fill=F,
+            line=list(color='#22a884', dash='dot'),
+            name="Upper IC limit"
+            ) %>%
   layout(title='<b> Residuals of model 1 <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)'))
 
 ```
 
@@ -395,8 +473,8 @@ plot_ly() %>%
 # scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
 
 ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
-  geom_smooth(fill="lightblue") + 
-  geom_point(color="darkblue", fill='blue', shape=21) +
+  geom_smooth(fill="#2a788e") + 
+  geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
   xlab("Time") + ylab("abs(residuals 1)") +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
@@ -412,25 +490,37 @@ ggplotly(ggfig)
 resi2 <- resid(m2)
 
 plot_ly() %>%
-  add_trace(x=~time(bcser), y=~resi2, type = "scatter", fill="tonexty",
-        mode="lines",name='Residuals of model 1') %>%
-  add_lines(x=~time(bcser), y=~-3*sd(resi2), fill=F,
-            line=list(color='red',dash='dot'), name='Lower IC limit') %>%
-  add_lines(x=~time(bcser), y=~3*sd(resi2), fill=F,
-            line=list(color='red', dash='dot'), name="Upper IC limit") %>%
+  add_trace(x=~time(bcser), y=~resi2,
+            type = "scatter",
+            fill="tonexty",
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            mode="lines",
+            name='Residuals of model 2'
+            ) %>%
+  add_lines(x=~time(bcser), y=~-3*sd(resi2),
+            fill=F,
+            line=list(color='#22a884',dash='dot'),
+            name='Lower IC limit'
+            ) %>%
+  add_lines(x=~time(bcser), y=~3*sd(resi2),
+            fill=F,
+            line=list(color='#22a884', dash='dot'),
+            name="Upper IC limit"
+            ) %>%
   layout(title='<b> Residuals of model 2 <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)'))
 
 ```
 
 
 ```{r}
 ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
-  geom_smooth(fill="lightblue") + 
-  geom_point(color="darkblue", fill='blue', shape=21) +
+  geom_smooth(fill="#2a788e") + 
+  geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
-  xlab("Time") + ylab("abs(residuals 2)") +
-  ggtitle(" <b> Absolute value of model 2 residuals <b>") +
+  xlab("Time") + ylab("abs(residuals 1)") +
+  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5))
 
 ggplotly(ggfig)
@@ -443,14 +533,55 @@ ggplotly(ggfig)
 ...
 
 ```{r}
-# qqPlot(resi1, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample Quantiles", grid=T)
-# qqline(resi1,col=2,lwd=2)
+ggplot(data=NULL, aes(sample=resi1)) +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF') +
+  stat_qq_line(color='#39568CFF') +
+  stat_qq_point(color="#440154FF", fill='#440154FF', shape=21) +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle("Normal Q-Q Plot") +
+  theme(plot.title = element_text(hjust = 0.5))
 
-ggfig <- ggplot(data=NULL, aes(sample=resi1)) +
-  geom_qq() + geom_qq_line() + theme_bw()
+ggfig = ggplot(data=NULL, aes(sample=resi1)) +
+  geom_qq(color="darkblue", fill='blue', shape=21) +
+  geom_qq_line(color='purple') +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle(" <b> Normal Q-Q Plot <b>") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 ggplotly(ggfig)
 ```
+
+```{r}
+hist(resi1,breaks=20, freq=FALSE)
+d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
+
+plot_ly() %>%
+  add_histogram(x=~resi1,
+        name="Model 1 residuals",
+        marker = list(color = "blue",
+                      line = list(color = "darkblue", width = 2))
+        ) %>%
+  add_trace(x=~d$x, y=~d$y,
+            type = 'scatter',
+            mode = 'none',
+            name = "Density curve",
+            fill = "tozeroy",
+            fillcolor="rgba(168, 216, 234, 0.5)",
+            yaxis = "y2"
+            ) %>% 
+  layout(yaxis2 = list(overlaying = "y", side = "right", title = "",
+                       zeroline = FALSE,
+                       showline = FALSE,
+                       showticklabels = FALSE,
+                       showgrid = FALSE),
+         title='<b> Histogram of model 1 residuals <b>',
+         xaxis=list(title='Residuals'),
+         yaxis=list(title='Density')
+         )
+```
+
 
 
 #### Modelo 2
@@ -468,8 +599,7 @@ ggplotly(ggfig)
 #### Modelo 1
 
 ```{r}
-m1<-arima(d12ser, order=c(1,0,2), seasonal=list(order=c(4,0,0), period=12))
-plot(m1)
+
 ```
 
 
