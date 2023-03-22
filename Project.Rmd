@@ -13,6 +13,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo=FALSE)
 library(plotly)
 library(forecast)
 library(TSstudio)
+library(car)
 ```
 
 ```{r}
@@ -153,7 +154,7 @@ lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper 
 bcser = (ser^lambda-1)/lambda
 ```
 
-La función `BoxCox.lambda()` de la librería *forecast* nos permite seleccionar de forma automática la mejor lambda posible bajo los criterios que se establezcan. En este caso, usando los métodos "guerrero" y "loglik" se busca, en primer lugar, una lambda que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de lambda se elige para maximizar el perfil de la verosimilitud logarítmica de un modelo lineal ajustado a x. Para datos no estacionales se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales.
+_La función `BoxCox.lambda()` de la librería *forecast* nos permite seleccionar de forma automática la mejor lambda posible bajo los criterios que se establezcan. En este caso, usando los métodos "guerrero" y "loglik" se busca, en primer lugar, una lambda que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de lambda se elige para maximizar el perfil de la verosimilitud logarítmica de un modelo lineal ajustado a x. Para datos no estacionales se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales._
 
 Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
@@ -181,11 +182,11 @@ plot_ly(x=~time(bcser), y=~bcser,
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
 ```
 
-Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varinza y media vemos que la primera no toma una tendencia en función de la segunda.
+Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varianza y media vemos que la primera no toma una tendencia en función de la segunda.
 
 #### Patrón estacional
 
-Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una gerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses. 
+Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una gerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses.
 
 ```{r}
 ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
@@ -193,8 +194,7 @@ ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>"
 monthplot(bcser)
 ```
 
-Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie.
-
+Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie. 
 
 Se observa también en el primer gráfico que el tercer mes del año tiene muetsras con valores que aumentan considerablemente en marzo y seguidamente caen ligeramente en el abril o viceversa. NO EMTENDO ESTO -> _Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico._ Posiblemente este fenómeno esté relacionado con los efectos de calendario, ya que por esos meses se encuentra la festividad de Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurre en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante se discutirá el tratamiento de dicho efecto.
 
@@ -223,7 +223,9 @@ Tras la transformación se puede observar en el gráfico de arriba que las subse
 ```{r}
 ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 ```
+
 Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón.
+
 
 #### Media constante
 
@@ -236,6 +238,10 @@ var(diff(diff(d12bcser)))
 ```
 
 Como la variancia de la serie aumenta tras la segunda diferenciación regular, se identifica que se ha realizado una sobrediferenciación. Esto implica que no es necesaria la aplicación de la segunda trasnformación para asegurar media constante, solo basta con la primera. Obteniendo el parámetro $d=1$.
+
+```{r}
+d1d12bcser = diff(d12bcser)
+```
 
 
 ### Serie estacionaria
@@ -377,16 +383,26 @@ plot_ly() %>%
   add_trace(x=~time(bcser), y=~resi1, type = "scatter", fill="tonexty",
         mode="lines",name='Residuals of model 1') %>%
   add_lines(x=~time(bcser), y=~-3*sd(resi1), fill=F,
-            line=list(color='red',dash='dash'), name='Lower IC limit') %>%
+            line=list(color='red',dash='dot'), name='Lower IC limit') %>%
   add_lines(x=~time(bcser), y=~3*sd(resi1), fill=F,
-            line=list(color='red', dash='dash'), name="Upper IC limit") %>%
+            line=list(color='red', dash='dot'), name="Upper IC limit") %>%
   layout(title='<b> Residuals of model 1 <b>',
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
 
 ```
 
 ```{r}
-scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
+# scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
+
+ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
+  geom_smooth(fill="lightblue") + 
+  geom_point(color="darkblue", fill='blue', shape=21) +
+  theme_bw() + 
+  xlab("Time") + ylab("abs(residuals 1)") +
+  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(ggfig)
 ```
 
 
@@ -394,20 +410,30 @@ scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
 
 ```{r}
 resi2 <- resid(m2)
-plot(resi2); abline(h=0); abline(h=c(-3*sd(resi2),3*sd(resi2)),lty=3,col=4)
 
-plot_ly(x=~time(bcser), y=~resi2,
-            type = "scatter", fill="tonexty", mode="lines") %>%
+plot_ly() %>%
+  add_trace(x=~time(bcser), y=~resi2, type = "scatter", fill="tonexty",
+        mode="lines",name='Residuals of model 1') %>%
+  add_lines(x=~time(bcser), y=~-3*sd(resi2), fill=F,
+            line=list(color='red',dash='dot'), name='Lower IC limit') %>%
+  add_lines(x=~time(bcser), y=~3*sd(resi2), fill=F,
+            line=list(color='red', dash='dot'), name="Upper IC limit") %>%
   layout(title='<b> Residuals of model 2 <b>',
-         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) %>%
-  add_lines(x=~time(bcser), y=~-3*sd(resi2), fill=F, line=list(color='red', dash='dash')) %>%
-  add_lines(x=~time(bcser), y=~3*sd(resi2), fill=F, line=list(color='red', dash='dash'))
+         xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
 
 ```
 
 
 ```{r}
-scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
+ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
+  geom_smooth(fill="lightblue") + 
+  geom_point(color="darkblue", fill='blue', shape=21) +
+  theme_bw() + 
+  xlab("Time") + ylab("abs(residuals 2)") +
+  ggtitle(" <b> Absolute value of model 2 residuals <b>") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(ggfig)
 ```
 
 ### Hipótesis de normalidad de residuos
@@ -415,6 +441,17 @@ scatter.smooth(sqrt(abs(resi2)), lpars=list(col=2))
 #### Modelo 1
 
 ...
+
+```{r}
+# qqPlot(resi1, main="Normal Q-Q Plot", xlab="Theoretical Quantiles", ylab="Sample Quantiles", grid=T)
+# qqline(resi1,col=2,lwd=2)
+
+ggfig <- ggplot(data=NULL, aes(sample=resi1)) +
+  geom_qq() + geom_qq_line() + theme_bw()
+
+ggplotly(ggfig)
+```
+
 
 #### Modelo 2
 
