@@ -144,7 +144,7 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers'
          xaxis=list(title='Time'), yaxis=list(title='Time Series'))
 ```
 
-Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
+Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no mejora la condición de la variancia y no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
 
 $$\frac{X_t^{\lambda}-1}{\lambda}$$
 
@@ -181,21 +181,24 @@ plot_ly(x=~time(bcser), y=~bcser,
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)'))
 ```
 
-Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo.
+Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varinza y media vemos que la primera no toma una tendencia en función de la segunda.
 
 #### Patrón estacional
 
-Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera ... La segunda muestra la distribución de las observaciones por meses.
+Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una gerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses. 
 
 ```{r}
 ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+
+monthplot(bcser)
 ```
 
-Para cada año se observa una clara relación anual, en donde, como se habia comentado anteriormente, en el mes de agosto se ve una clara caida de los valores de las observaciones. Lo que conlleva a tener un IQR por debajo del resto. 
+Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie.
 
-Nos damos cuenta tmabién de que el tercer mes del año tiene muetsras con valores que aumentan y seguidamente caen ligeramente en el abril o viceversa. Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico. Posiblemente este fenómeno este relacionado con los efectos de calendario, ya que por esos meses se encuentra la Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurrio en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante ase discutirá el tratamiento de dicho efecto.
 
-Se procede a realizar la diferenciación estacional de orden 12. Con lo que el valor del parámetro $D$ toma el valor de la unidad.
+Se observa también en el primer gráfico que el tercer mes del año tiene muetsras con valores que aumentan considerablemente en marzo y seguidamente caen ligeramente en el abril o viceversa. NO EMTENDO ESTO -> _Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico._ Posiblemente este fenómeno esté relacionado con los efectos de calendario, ya que por esos meses se encuentra la festividad de Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurre en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante se discutirá el tratamiento de dicho efecto.
+
+Se ha confirmado la presencia de un patrón estacional, por lo que se procede a realizar la diferenciación estacional de orden 12. Esto impica que el valor del parámetro $D$ toma el valor de la unidad.
 
 $$(1-B^{12})X_t$$
 
@@ -211,15 +214,20 @@ plot_ly() %>%
          xaxis=list(title='Time'), yaxis=list(title='(Thousand million euros)')) 
 ```
 
-Tras la transformación se puede afirmar que las subseries presentan una misma media, constante horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo, con lo que se ha eliminado el patrón estacional.
+```{r}
+monthplot(d12bcser)
+```
+
+Tras la transformación se puede observar en el gráfico de arriba que las subseries de los meses presentan una misma media, constante horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo, con lo que se ha eliminado el patrón estacional.
 
 ```{r}
 ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 ```
+Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón.
 
 #### Media constante
 
-Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la variabilidad como constante. Aunque para comprobar se compararán la variancia de la serie con patrón estacional y su variancia tras una diferenciación regular.
+Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la media como constante. Aunque para comprobar se compararán la variancia de la serie con solo la diferenciación estacional y su variancia tras aplicarle una diferenciación regular a esta última.
 
 ```{r}
 var(d12bcser)
@@ -227,18 +235,14 @@ var(diff(d12bcser))
 var(diff(diff(d12bcser)))
 ```
 
-Como la variancia de la serie aumenta tras la segunda diferenciación regular, se identifica que se ha realizado una sobrediferenciación, con lo que no es necesaria la aplicación de la segunda trasnformación para asegurar media constante, solo basta con la primera. Obteniendo el parámetro $d=1$.
-
-```{r}
-d1d12bcser = diff(d12bcser)
-```
+Como la variancia de la serie aumenta tras la segunda diferenciación regular, se identifica que se ha realizado una sobrediferenciación. Esto implica que no es necesaria la aplicación de la segunda trasnformación para asegurar media constante, solo basta con la primera. Obteniendo el parámetro $d=1$.
 
 
 ### Serie estacionaria
 
-Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
+Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional y una diferenciación regular para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
 
-$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \lambda=0.395$$
+$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \lambda≃0.395$$
 
 ```{r}
 plot_ly() %>%
