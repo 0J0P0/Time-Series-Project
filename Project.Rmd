@@ -118,7 +118,7 @@ El estudio de estas predicciones se buscará afinar al aplicar un tratamiento de
 
 #### Variancia constante
 
-Se busca un incremento en la variabilidad de las observaciones de la serie a medida del paso del tiempo. Para ello se grafícan mediciones de la media y la variancia de grupos consecutivos de entre 8-12 observaciones a modo de poder visualizar el comportamiento de la variancia de la serie.
+Se pretende identificar algun tipo de tendencia en la serie que haga que la variancia no sea constante a lo largo de esto. Para ello se grafican mediciones de la media y la variancia de grupos consecutivos de entre 8-12 observaciones a modo de poder visualizar el comportamiento de la variancia de la serie.
 
 Para satisfacer la condición de variancia constante, la dispersión de los puntos debe ser similar a lo largo de todo el eje horizonal.
 
@@ -132,11 +132,11 @@ plot_ly(x=~m, y=~v, marker = list(size = 7, color = 'blue',
          xaxis=list(title='Mean'), yaxis=list(title='Variance'))
 ```
 
-Vease que hay un aumento de la variancia entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría razonar que todo el conjunto de puntos mantienen la misma dispersión, una transformación `Box-Cox` podría ser útil para este caso.
+Vease que hay un aumento de la variancia entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría llegar a razonar y aceptar que todo el conjunto de puntos mantienen una dispersión similar, una transformación `Box-Cox` podría ser útil para este caso.
 
 Para evitar la posible influencia de valores atípicos, también se realiza un boxplot para cada año de la serie, de modo que, idealmente, la altura del IQR de cada caja tiene que se aproximadamente la misma.
 
-Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie, pero no se puede validar una variancia constante.
+Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie pero si que es notable en ciertos casos, por lo que no se puede validar que haya una variancia constante en la serie original.
 
 ```{r}
 plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers') %>%
@@ -144,7 +144,7 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box', boxpoints = 'suspectedoutliers'
          xaxis=list(title='Time'), yaxis=list(title='Time Series'))
 ```
 
-Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación del tipo: 
+Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma: 
 
 $$\frac{X_t^{\lambda}-1}{\lambda}$$
 
@@ -153,7 +153,7 @@ lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper 
 bcser = (ser^lambda-1)/lambda
 ```
 
-(EXPLICACION DEL METODO)
+La función *BoxCox.lambda()* de la librería *forecast* nos permite seleccionar de forma automática la mejor lambda posible bajo los criterios que se establezcan. En este caso, usando los métodos "guerrero" y "loglik" se busca, en primer lugar, una lambda que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de lambda se elige para maximizar el perfil de la verosimilitud logarítmica de un modelo lineal ajustado a x. Para datos no estacionales, se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales, se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales.
 
 Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
