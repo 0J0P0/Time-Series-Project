@@ -465,9 +465,14 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 
 ### Variancia constante de residuos
 
+A modo de validar la condición de homocedasticidad de la variancia en los residuos, nos apoyaremos en el gráfico de residuos para diagnosticar la bondad de ajuste del modelo 1. Con la intención de detectar si el modelo captura completamente la estructura de la serie temporal.
+
+
 #### Modelo 1
 
-A modo de validar la condición de homocedasticidad de la variancia en los residuos, 
+Observamos que los residuos del modelo 1 presentan dos valores por debajo del límite inferior de las bandas de probabilidad, lo cual respecta a $0.833%$ de los valores. A pesar de que no es un porcentaje elevado respecto a lo que consideramos indicativo de un problema, estos posibles valores atípicos del modelo serán comentados a profundidad en el apartado de tratamiento de atípicos.
+
+En términos de la variancia, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro, lo que sugiere que el modelo genera una aproximación a las observaciones aceptable.
 
 ```{r}
 resi1 <- resid(m1)
@@ -497,6 +502,10 @@ plot_ly() %>%
 
 ```
 
+En cuanto a la volatilidad de la serie se puede mencionar que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados.
+
+No obstante, la variancia de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una variancia creciente en comparación con el inicio de la misma. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una curvatura a lo largo de los residuos, además de tener intervalos de confianza de mayor amplitud hacia el final de las observaciones.
+
 ```{r}
 # scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
 
@@ -510,6 +519,8 @@ ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
 
 ggplotly(ggfig)
 ```
+
+CONCLUSION
 
 #### Modelo 2
 
@@ -547,7 +558,7 @@ ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
   xlab("Time") + ylab("abs(residuals 2)") +
-  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  ggtitle(" <b> Absolute value of model 2 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5))
 
 ggplotly(ggfig)
@@ -633,7 +644,31 @@ tsdiag(m1,gof.lag=72)
 
 ### Propiedad de causalidad y/o estacionalidad
 
+A fin de comprobar la causalidad de un modelo se ha de comprobar que los pesos $\psi_i$ de
+
+$$\phi(B) = \frac{\theta_q(B)}{\phi_p(B)}$$
+
+convergan, de modo que se pueda expresar como un $\mbox{MA}(\infty)$. Lo cuál será de gran utilidad a la hora del cálculo de la variancia de las predicciones puntuales realizadas en breve.
+
+Para asegurar la invertibilidad de un modelo, se ha de comprobar, de manera análoga, que los pesos $\pi_i$ de
+
+$$\pi(B) = \frac{\phi_p(B)}{\theta_q(B)}$$
+tengan convergencia, de modo que se obtenga una expresión $\mbox{AR}(\infty)$. Bajo esta propiedad y con el uso de observaciones pasadas será posible el cálculo de las predicciones puntuales en el apartado de predicciones.
+
+
 #### Modelo 1
+
+Al ver que todas las raices del polinomio de grado $50$ son mayores que la unidad, podemos confirmar que el modelo 1 es causal.
+
+```{r}
+Mod(polyroot(c(1,-m1$model$phi)))
+```
+Como solo hay una raíz para la componente de media móvil del modelo y tiene módulo mayor que 1, el modelo 1 también cumple con la caondición de invertible.
+
+```{r}
+Mod(polyroot(c(1,m1$model$theta)))
+```
+
 
 ```{r}
 ggfig <- autoplot(m1) +
@@ -645,9 +680,27 @@ ggfig <- autoplot(m1) +
 ggplotly(ggfig)
 ```
 
-...
+Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el modelo 1 es tanto causal como invertible.
 
 #### Modelo 2
+
+```{r}
+Mod(polyroot(c(1,-m2$model$phi)))
+```
+
+```{r}
+Mod(polyroot(c(1,m2$model$theta)))
+```
+
+```{r}
+ggfig <- autoplot(m2) +
+  geom_point(color="#440154", fill='#414487', shape=21, size=1) +
+  theme_bw() +
+  ggtitle(" <b> Invers roots model 1 <b>") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplotly(ggfig)
+```
 
 ### Estabilidad
 
