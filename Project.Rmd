@@ -5,15 +5,18 @@ date: "2023-03-14"
 output: pdf_document
 ---
 
+la, residuos en 0, obs neg
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo=FALSE) 
 ```
 
 ```{r}
+library(car)
+library(qqplotr)
 library(plotly)
 library(forecast)
 library(TSstudio)
-library(car)
 ```
 
 ```{r}
@@ -59,14 +62,14 @@ plot_ly(x=~time(ser), y=~ser,
          yaxis=list(title='(Thousand million euros)')
          )
 ```
+
 Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
 
-Por otro lado, a simple vista se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve  a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
+Por otro lado, a simple vista se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
 
 Otro hecho a destacar sobre la serie son un par de observaciones con magnitudes que sobresalen notablemente en el mes de febrero (finales de enero e inicios de febrero) de 2011 y 2017 respectivamente. Una posible hipótesis para la segunda observación (febrero 2017) supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto. Para el primer caso (enero/febrero 2011) los bienes de equipo y el sector automóvil han sido los principales impulsores del aumento en los 10 primeros meses del año, por lo que es probable que este pico en febrero esté relacionado. Los datos oficiales indican que en el segundo caso las principales contribuciones al crecimiento de las exportaciones provinieron del sector de productos energéticos, alimentación, bebidas y tabaco, sector automóvil y manufacturas de consumo.
 
 Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara sobre estos resultados.
-
 
 ```{r}
 ds <- decompose(ser)
@@ -108,18 +111,17 @@ Mediante la descomposición de la serie, confirmamos la tendencia conforme a un 
 
 En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
 
-
 ## Motivación
 
 ...
 
 ## Metodología
 
-Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins. 
+Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins.
 
 De manera incial se comenzará con la identificación de la serie. La cual consiste en la evaluación de la serie para aplicarle un conjunto de trasnformaciones de modo que se obtenga una serie estacionaria, sobre la cual poder prpoponer modelos adecuados. Dichas transformaciones se aplican para obtener una variancia cosntante de la serie, eliminar un posible patrón estacional de los datos y conseguir una media constante. De tal forma que sea posible proponer modelos, premiando su baja complejidad, para proceder a la estimación de sus parámetros y de la media de la serie.
 
-Siguientemente, se han de validar los modelos propuestos. Llegados a este punto, trabajaremos con dos modelos propuesto a modo de simplificación del proyecto. Para cada uno de ellos se realizarán las revisiones necesarias para validar la variancia consante de los residuos del modelo. Comprobaremos que los residuos se comporten bajo la hipótesis de normalidad como un _White Noise_. Por último se comprobará que los residuos cumplan con la condición de normalidad, considerada la de mayor relevancia al tratarse de una serie temporal.
+Siguientemente, se han de validar los modelos propuestos. Llegados a este punto, trabajaremos con dos modelos propuesto a modo de simplificación del proyecto. Para cada uno de ellos se realizarán las revisiones necesarias para validar la variancia consante de los residuos del modelo. Comprobaremos que los residuos se comporten bajo la hipótesis de normalidad como un *White Noise*. Por último se comprobará que los residuos cumplan con la condición de normalidad, considerada la de mayor relevancia al tratarse de una serie temporal.
 
 Una vez consolidados los modelos propuestos, se estudiarán las propiedades de estabilidad, invertibilidad y causalidad de cada uno. De modo que justo después se realizarán las predicciones puntuales y sus medidas de predicción del modelo.
 
@@ -180,14 +182,16 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box',
 
 Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no mejora la condición de la variancia y no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
 
-$$\frac{X_t^{\lambda}-1}{\lambda}$$
+$$\frac{X_t^{\lambda}-1}{\lambda}, \ \ \lambda \in [-1,2], \ \lambda \neq 0$$
 
 ```{r}
 lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper = 2)
 bcser = (ser^lambda-1)/lambda
 ```
 
-_La función `BoxCox.lambda()` de la librería *forecast* nos permite seleccionar de forma automática la mejor lambda posible bajo los criterios que se establezcan. En este caso, usando los métodos "guerrero" y "loglik" se busca, en primer lugar, una lambda que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de lambda se elige para maximizar el perfil de la verosimilitud logarítmica de un modelo lineal ajustado a x. Para datos no estacionales se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales._
+La función `BoxCox.lambda()` de la librería **forecast** nos permite seleccionar de forma automática la mejor $\lambda$ posible bajo los criterios que se establezcan. En este caso, usando los métodos "*guerrero*" y "*loglik*" se busca, en primer lugar, una $\lambda$ que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de $\lambda$ se elige para maximizar el perfíl de la verosimilitud logarítmica de un modelo lineal ajustado a x.
+
+QUE VERGAS ES ESTO --\> Para datos no estacionales se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales.
 
 Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
@@ -204,7 +208,6 @@ plot_ly(x=~m, y=~v,
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
 ```
-
 
 ```{r}
 plot_ly(x=~floor(time(bcser)), y=~bcser, type='box',
@@ -243,9 +246,9 @@ ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>"
 monthplot(bcser)
 ```
 
-Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie. 
+Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie.
 
-Se observa también en el primer gráfico que el tercer mes del año tiene muetsras con valores que aumentan considerablemente en marzo y seguidamente caen ligeramente en el abril o viceversa. NO EMTENDO ESTO -> _Aunque estas muestras presentan una distribución con mucha variabilidad dependiendo del año, como se identifica en el tercer gráfico._ Posiblemente este fenómeno esté relacionado con los efectos de calendario, ya que por esos meses se encuentra la festividad de Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurre en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante se discutirá el tratamiento de dicho efecto.
+Se observa también en el primer gráfico que el tercer mes del año tiene muetsras con valores que aumentan considerablemente en marzo y seguidamente caen ligeramente en el abril o viceversa. Posiblemente este fenómeno esté relacionado con los efectos de calendario, ya que por esos meses se encuentra la festividad de Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurre en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante se discutirá el tratamiento de dicho efecto.
 
 Se ha confirmado la presencia de un patrón estacional, por lo que se procede a realizar la diferenciación estacional de orden 12. Esto impica que el valor del parámetro $D$ toma el valor de la unidad.
 
@@ -285,7 +288,6 @@ ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <
 
 Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón.
 
-
 #### Media constante
 
 Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la media como constante. Aunque para comprobar se compararán la variancia de la serie con solo la diferenciación estacional y su variancia tras aplicarle una diferenciación regular a esta última.
@@ -302,12 +304,11 @@ Como la variancia de la serie aumenta tras la segunda diferenciación regular, s
 d1d12bcser = diff(d12bcser)
 ```
 
-
 ### Serie estacionaria
 
 Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional y una diferenciación regular para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
 
-$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \lambda≃0.395$$
+$$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \ \lambda≃0.395$$
 
 ```{r}
 plot_ly() %>%
@@ -330,7 +331,6 @@ plot_ly() %>%
          yaxis=list(title='(Thousand million euros)')) 
 ```
 
-
 ### Modelos propuestos
 
 Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de la serie tras haberle aplicado las transformaciones.
@@ -339,15 +339,29 @@ Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de 
 ts_cor(d1d12bcser, lag.max = 72)
 ```
 
-Si bien es cierto que se observar cierta tendencia logarítmica en el PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente.
+Si bien es cierto que se observar cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
 
-Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y AR(4). Es favorable escoger AR(4) ya que si resulta haber parámetros no significativos, estos siempre se pueden eliminar del ajuste. Para la parte regular resulta muy evdiente que la mejor opción es un AR(2).
+Para determinar los valores de `p, P` y `q, Q` se necesita contar el número de retrasos hasta la última barra significativamente diferente de 0. $\rho(h) \neq 0$. Con lo que la última barra debe encontrarse fuera de las bandas del intervalo de confianza para poder rechazar la hipótesis nula de significación de $\rho(h)$.
 
+$$H_0: \rho(h) = 0 \\ H_1: \rho(h) \neq 0$$
 
-AR(p=2) AR(P=2) MA(q=4) MA(Q=6)
+Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y AR(4). Pues esta claro que el primer retraso estacional es significativo, mientras que el segundo y el cuarto sobresalen ligeramente por el límite inferior del intervalo de confianza. La opción de escoger una parte autoregresiva con $p=1$ puede razonarse como correcta al aportar una baja complejidad al modelo, sin embargo no es un candidato deseable al poder estar dejando parte sin explicar.Con lo que es favorable decantarse por un AR(4) ya que se tendría en cuenta un mayor número de relaciones entre las variables del pasado, y si resulta haber parámetros no significativos, estos se pueden eliminar del ajuste.
+
+Aun sabiendo que los retrasos del ACF no presentan un decreciemiento evidente, se podría considerar una media móvil de parámetro $q=6$, pues aunque los retrasos intermedios no presentan significación clara, el sexto retraso esatcional si es significativo. En cambio esta propuesta incorpora al modelo una mayor complejidad en comparación con la parte autoregresiva propuesta con antelación, con lo que nos decantaremos por mantener solamente una parte AR(4) o bien proponer un ARMA que explique esta parte estacional.
+
+EXPLICAR ARMA ESTACIONAL
+
+Para la parte regular resulta muy evdiente que la mejor opción es un AR(2), debido a que son los únicos dos retrasos con obvia significación. El resto de barras muestran este decreciemiento ya mencionado y aunque algunas sobresalen, estan suficientemente lejos del origen como para considerarse como fruto del $5%$ de azar en las observaciones.
+
+No obstante, considerando únicamente un número limitado de los primeros retrasos del ACF, una propuesta MA(4) sería suficiente, pese a que se obviarían los retrasos siguientes. Por lo que se tendría que suponer que los retrasos significativos lejos del origen son causados como satélites de los retrasos estacionales.
+
+Por el número de parámetros entre $p$ y $q$, se evaluará proponer un modelo ARMA para reducir la complejidad del modelo, mientras que se busca una explicación conjunta para el modelo.
+
+EXPLICAR ARMA
 
 ARMA(1,1) ARMA(1,2) ARMA(2,1)
 
+EXPLICAR LOS 4 MODELOS ESCOGIDOS
 
 ```{r}
 arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(0,0,6), period=12))
@@ -360,6 +374,7 @@ arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
 
 ```
 
+JUSTFICAR LA SELECCION DE LOS DOS MEJORES
 
 ### Estimación modelo 1
 
@@ -371,7 +386,9 @@ Para la estimación del modelo 1 se ha de comprobar primeramente si la media de 
 
 Se comprueba la significación de $\hat{\mu_1}$ mediante su $t$-ratio para determinar si es significante para el modelo, es decir, si se acepta la hipótesis nula de que la media es igual a 0.
 
-$$H_0: \hat{\mu_1} = 0 \\ H_1: \hat{\mu_1} \neq 0$$ donde el $t$-ratio viene dado por
+$$H_0: \hat{\mu_1} = 0 \\ H_1: \hat{\mu_1} \neq 0$$ 
+
+donde el $t$-ratio viene dado por
 
 $$t = \frac{\hat{\mu_1}}{S_{W_t}} \sim N(0,1)$$
 
@@ -412,10 +429,11 @@ En vista de que el AIC ha aumentado tras eliminar $\hat{\theta_1}$, se considera
 
 El resto de parámetros si son significativos, como se ha visto anteriormente.
 
-
 ### Estimación modelo 2
 
-...
+El modelo 2 $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ de la forma:
+
+$$(1 - \phi_1 B - \phi_2 B^2)(1 - \Phi_1 B^{12} - \Phi_2 B^{24})(1-B)(1-B^{12})\frac{(X_t - \mu_2)^\lambda-1}{\lambda} = (1+ \Theta_1 B^{12} + \Theta_2 B^{24})Z_t$$
 
 ```{r}
 m2 = arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
@@ -434,7 +452,6 @@ m2
 ```{r}
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
-
 
 ## Validación
 
@@ -488,7 +505,6 @@ ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
 ggplotly(ggfig)
 ```
 
-
 #### Modelo 2
 
 ```{r}
@@ -519,13 +535,12 @@ plot_ly() %>%
 
 ```
 
-
 ```{r}
 ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
-  xlab("Time") + ylab("abs(residuals 1)") +
+  xlab("Time") + ylab("abs(residuals 2)") +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -588,7 +603,9 @@ plot_ly() %>%
          )
 ```
 
-
+```{r}
+shapiro.test(resi1)
+```
 
 #### Modelo 2
 
@@ -598,6 +615,14 @@ plot_ly() %>%
 
 ...
 
+```{r}
+ts_cor(resi1, lag.max = 72)
+```
+
+```{r}
+tsdiag(m1,gof.lag=72)
+```
+
 #### Modelo 2
 
 ### Propiedad de causalidad y/o estacionalidad
@@ -605,9 +630,14 @@ plot_ly() %>%
 #### Modelo 1
 
 ```{r}
+ggfig <- autoplot(m1) +
+  geom_point(color="#440154", fill='#414487', shape=21, size=1) +
+  theme_bw() +
+  ggtitle(" <b> Invers roots model 1 <b>") +
+  theme(plot.title = element_text(hjust = 0.5))
 
+ggplotly(ggfig)
 ```
-
 
 ...
 
