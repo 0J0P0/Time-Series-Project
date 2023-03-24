@@ -39,7 +39,7 @@ Tal estudio presentado a continuación se compone de una succesión de apartados
 
 ## Descripción Serie Temporal
 
-La serie temporal de eleccíon para el presente proyecto contiene el total de exportaciones (en miles de millones de euros) en España. (CITA).
+La serie temporal de elección para el proyecto contiene el total de exportaciones (en miles de millones de euros) en España. (CITA).
 
 *(descripcion serie, metodo de recogida de datos, variables)*
 
@@ -69,7 +69,7 @@ Por otro lado, a simple vista se detecta una caída en lo que corresponde a los 
 
 Otro hecho a destacar sobre la serie son un par de observaciones con magnitudes que sobresalen notablemente en el mes de febrero (finales de enero e inicios de febrero) de 2011 y 2017 respectivamente. Una posible hipótesis para la segunda observación (febrero 2017) supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto. Para el primer caso (enero/febrero 2011) los bienes de equipo y el sector automóvil han sido los principales impulsores del aumento en los 10 primeros meses del año, por lo que es probable que este pico en febrero esté relacionado. Los datos oficiales indican que en el segundo caso las principales contribuciones al crecimiento de las exportaciones provinieron del sector de productos energéticos, alimentación, bebidas y tabaco, sector automóvil y manufacturas de consumo.
 
-Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara sobre estos resultados.
+Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara sobre estos resultados, ya que es muy probable que hubiese una razón de peso para estos aumentos.
 
 ```{r}
 ds <- decompose(ser)
@@ -107,9 +107,9 @@ subplot(p1, p2, p3, p4, nrows=4) %>%
   layout(title='<b> Time Series Decomposition <b>')
 ```
 
-Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque tengase en cuenta de las magnitudes de las observaciones.
+Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque deben tenerse en cuenta las magnitudes de las observaciones.
 
-En verde, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
+_En verde_, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
 
 ## Motivación
 
@@ -121,11 +121,11 @@ Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins.
 
 De manera incial se comenzará con la identificación de la serie. La cual consiste en la evaluación de la serie para aplicarle un conjunto de trasnformaciones de modo que se obtenga una serie estacionaria, sobre la cual poder prpoponer modelos adecuados. Dichas transformaciones se aplican para obtener una variancia cosntante de la serie, eliminar un posible patrón estacional de los datos y conseguir una media constante. De tal forma que sea posible proponer modelos, premiando su baja complejidad, para proceder a la estimación de sus parámetros y de la media de la serie.
 
-Siguientemente, se han de validar los modelos propuestos. Llegados a este punto, trabajaremos con dos modelos propuesto a modo de simplificación del proyecto. Para cada uno de ellos se realizarán las revisiones necesarias para validar la variancia consante de los residuos del modelo. Comprobaremos que los residuos se comporten bajo la hipótesis de normalidad como un *White Noise*. Por último se comprobará que los residuos cumplan con la condición de normalidad, considerada la de mayor relevancia al tratarse de una serie temporal.
+A continuación, se han de validar los modelos propuestos. Llegados a este punto, ya se habrán seleccionado dos de los modelos propuestos bajo criterios que se detallarán en el informe. Para cada uno de ellos se realizarán las revisiones necesarias para validar la variancia consante de los residuos del modelo, siendo la principal herramienta el gráfico de los propios residuos. Se comprobará que los residuos se comporten bajo la hipótesis de normalidad, con herramientas gráficas como el *Normal Q-Q Plot* o el histograma de los residuos. Por último se revisará que los residuos cumplan con la condición de independencia, considerada la de mayor relevancia al tratarse de una serie temporal, mediante el ACF y PACF de los mismos residuos. Todas estas herramientas y métodos se explican con detalle a lo largo del informe.
 
-Una vez consolidados los modelos propuestos, se estudiarán las propiedades de estabilidad, invertibilidad y causalidad de cada uno. De modo que justo después se realizarán las predicciones puntuales y sus medidas de predicción del modelo.
+Una vez consolidados los modelos propuestos, se estudiarán las propiedades de estabilidad, invertibilidad y causalidad de cada uno. De modo que justo después se realizarán las predicciones puntuales y las medidas de capacidad de predicción de cada modelo.
 
-El estudio de estas predicciones se buscará afinar al aplicar un tratamiento de atípicos, en la cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. A fin de poder mejorar las predicciones en cada uno de los modelos. Para poder así, discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
+Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. Esto tiene el fin de poder mejorar las predicciones en cada uno de los modelos para poder así discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
 
 ## Descripción sintética
 
@@ -191,8 +191,6 @@ bcser = (ser^lambda-1)/lambda
 
 La función `BoxCox.lambda()` de la librería **forecast** nos permite seleccionar de forma automática la mejor $\lambda$ posible bajo los criterios que se establezcan. En este caso, usando los métodos "*guerrero*" y "*loglik*" se busca, en primer lugar, una $\lambda$ que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de $\lambda$ se elige para maximizar el perfíl de la verosimilitud logarítmica de un modelo lineal ajustado a x.
 
-QUE VERGAS ES ESTO --\> Para datos no estacionales se ajusta una tendencia lineal en el tiempo, mientras que para datos estacionales se utiliza una tendencia lineal en el tiempo con variables ficticias estacionales.
-
 Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
 ```{r}
@@ -238,7 +236,7 @@ Tras la transformación, la variancia para los diferentes grupos de observacione
 
 #### Patrón estacional
 
-Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una gerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses.
+Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una jerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses.
 
 ```{r}
 ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
@@ -280,13 +278,13 @@ plot_ly() %>%
 monthplot(d12bcser)
 ```
 
-Tras la transformación se puede observar en el gráfico de arriba que las subseries de los meses presentan una misma media, constante horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo, con lo que se ha eliminado el patrón estacional.
+Tras la transformación se puede observar en el gráfico de arriba que las subseries de los meses presentan una misma media, forman una línea casi perfecta horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo.
 
 ```{r}
 ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 ```
 
-Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón.
+Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón estacional.
 
 #### Media constante
 
@@ -341,21 +339,21 @@ ts_cor(d1d12bcser, lag.max = 72)
 
 Si bien es cierto que se observar cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
 
-Para determinar los valores de `p, P` y `q, Q` se necesita contar el número de retrasos hasta la última barra significativamente diferente de 0. $\rho(h) \neq 0$. Con lo que la última barra debe encontrarse fuera de las bandas del intervalo de confianza para poder rechazar la hipótesis nula de significación de $\rho(h)$.
+Para determinar los valores de `p, P` y `q, Q` de los modelos ARMA se necesita contar el número de retrasos hasta la última barra significativamente diferente de 0. $\rho(h) \neq 0$. Con lo que la última barra que se considere debe encontrarse fuera de las bandas del intervalo de confianza para poder rechazar la hipótesis nula de no significación de $\rho(h)$.
 
 $$H_0: \rho(h) = 0 \\ H_1: \rho(h) \neq 0$$
 
-Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y AR(4). Pues esta claro que el primer retraso estacional es significativo, mientras que el segundo y el cuarto sobresalen ligeramente por el límite inferior del intervalo de confianza. La opción de escoger una parte autoregresiva con $p=1$ puede razonarse como correcta al aportar una baja complejidad al modelo, sin embargo no es un candidato deseable al poder estar dejando parte sin explicar.Con lo que es favorable decantarse por un AR(4) ya que se tendría en cuenta un mayor número de relaciones entre las variables del pasado, y si resulta haber parámetros no significativos, estos se pueden eliminar del ajuste.
+Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y AR(4). Pues esta claro que el primer retraso estacional es significativo, mientras que el segundo y el cuarto sobresalen ligeramente por el límite inferior del intervalo de confianza. La opción de escoger una parte autoregresiva con $p=1$ puede razonarse como correcta al aportar una baja complejidad al modelo, sin embargo no es un candidato deseable al poder estar dejando parte sin explicar, por lo que es favorable decantarse por un AR(4) ya que se tendría en cuenta un mayor número de relaciones entre las variables del pasado, y si resulta haber parámetros no significativos, estos se pueden eliminar del ajuste.
 
-Aun sabiendo que los retrasos del ACF no presentan un decreciemiento evidente, se podría considerar una media móvil de parámetro $q=6$, pues aunque los retrasos intermedios no presentan significación clara, el sexto retraso esatcional si es significativo. En cambio esta propuesta incorpora al modelo una mayor complejidad en comparación con la parte autoregresiva propuesta con antelación, con lo que nos decantaremos por mantener solamente una parte AR(4) o bien proponer un ARMA que explique esta parte estacional.
+Aun sabiendo que los retrasos del ACF no presentan un decreciemiento evidente, se podría considerar una media móvil de parámetro $q=6$. Aunque los retrasos intermedios no presentan significación clara, el sexto retraso esatcional si es significativo. En cambio esta propuesta incorpora al modelo una mayor complejidad en comparación con la parte autoregresiva propuesta con antelación, con lo que nos decantaremos por mantener solamente una parte AR(4) o bien proponer un ARMA que explique esta parte estacional.
 
 EXPLICAR ARMA ESTACIONAL
 
 Para la parte regular resulta muy evdiente que la mejor opción es un AR(2), debido a que son los únicos dos retrasos con obvia significación. El resto de barras muestran este decreciemiento ya mencionado y aunque algunas sobresalen, estan suficientemente lejos del origen como para considerarse como fruto del $5%$ de azar en las observaciones.
 
-No obstante, considerando únicamente un número limitado de los primeros retrasos del ACF, una propuesta MA(4) sería suficiente, pese a que se obviarían los retrasos siguientes. Por lo que se tendría que suponer que los retrasos significativos lejos del origen son causados como satélites de los retrasos estacionales.
+No obstante, considerando únicamente un número limitado de los primeros retrasos del ACF, una propuesta MA(4) sería suficiente, pese a que se obviarían los retrasos siguientes. Por lo que se tendría que suponer que los retrasos significativos lejos del origen actúan como satélites de los retrasos estacionales.
 
-Por el número de parámetros entre $p$ y $q$, se evaluará proponer un modelo ARMA para reducir la complejidad del modelo, mientras que se busca una explicación conjunta para el modelo.
+Por el elevado número de parámetros propuestos, se estudiará proponer un modelo ARMA para reducir la complejidad del modelo, mientras que se busca una explicación conjunta para el modelo.
 
 EXPLICAR ARMA
 
