@@ -13,15 +13,13 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo=FALSE)
 
 ```{r}
 library(car)
-library(qqplotr)
 library(plotly)
+library(webshot)
+library(qqplotr)
 library(forecast)
 library(TSstudio)
 ```
 
-```{r}
-m <- list(l = 50, r = 50, b = 100, t = 100, pad = 4)
-```
 
 # Titulo
 
@@ -50,7 +48,7 @@ ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
 ```
 
 ```{r}
-plot_ly(x=~time(ser), y=~ser,
+f1 = plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         fill="tozeroy",
         mode="lines",
@@ -61,6 +59,8 @@ plot_ly(x=~time(ser), y=~ser,
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')
          )
+
+f1;
 ```
 
 Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
@@ -103,8 +103,9 @@ p4 <- plot_ly() %>% add_trace(x = time(ds$random), y = ds$random,
                               fillcolor="rgba(68, 1, 84, 0.5)",
                               name = "Random")
 
-subplot(p1, p2, p3, p4, nrows=4) %>%
+f2 = subplot(p1, p2, p3, p4, nrows=4) %>%
   layout(title='<b> Time Series Decomposition <b>')
+f2;
 ```
 
 Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque deben tenerse en cuenta las magnitudes de las observaciones.
@@ -153,7 +154,7 @@ Para satisfacer la condición de variancia constante, la dispersión de los punt
 m <- apply(matrix(ser, nrow=12), 2, mean)
 v <- apply(matrix(ser, nrow=12), 2, var)
 
-plot_ly(x=~m, y=~v,
+f3 = plot_ly(x=~m, y=~v,
         marker = list(size = 7,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
@@ -161,6 +162,7 @@ plot_ly(x=~m, y=~v,
   layout(title='<b> Varience~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
+f3;
 ```
 
 Vease que hay un aumento de la variancia entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría llegar a razonar y aceptar que todo el conjunto de puntos mantienen una dispersión similar, una transformación *Box-Cox* podría ser útil para este caso.
@@ -170,7 +172,7 @@ Para evitar la posible influencia de valores atípicos, también se realiza un b
 Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie pero si que es notable en ciertos casos, por lo que no se puede validar que haya una variancia constante en la serie original.
 
 ```{r}
-plot_ly(x=~floor(time(ser)), y=~ser, type='box',
+f4 = plot_ly(x=~floor(time(ser)), y=~ser, type='box',
         boxpoints = 'suspectedoutliers',
         fillcolor="#2a788e",
         line=list(color="#414487")
@@ -178,6 +180,7 @@ plot_ly(x=~floor(time(ser)), y=~ser, type='box',
   layout(title='<b> Box Plot for periods <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='Time Series'))
+f4
 ```
 
 Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no mejora la condición de la variancia y no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
@@ -197,7 +200,7 @@ Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 m <- apply(matrix(bcser, nrow=12), 2, mean)
 v <- apply(matrix(bcser, nrow=12), 2, var)
 
-plot_ly(x=~m, y=~v,
+f5 = plot_ly(x=~m, y=~v,
         marker = list(size = 7,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
@@ -205,10 +208,11 @@ plot_ly(x=~m, y=~v,
   layout(title='<b> Varience~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
+f5
 ```
 
 ```{r}
-plot_ly(x=~floor(time(bcser)), y=~bcser, type='box',
+f6 = plot_ly(x=~floor(time(bcser)), y=~bcser, type='box',
         boxpoints = 'suspectedoutliers',
         fillcolor="#2a788e",
         line=list(color="#414487")
@@ -216,10 +220,11 @@ plot_ly(x=~floor(time(bcser)), y=~bcser, type='box',
   layout(title='<b> Box Plot for periods <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='Time Series'))
+f6
 ```
 
 ```{r}
-plot_ly(x=~time(bcser), y=~bcser,
+f7 = plot_ly(x=~time(bcser), y=~bcser,
         type = "scatter",
         fill="tozeroy",
         mode="lines",
@@ -230,6 +235,7 @@ plot_ly(x=~time(bcser), y=~bcser,
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')
          )
+f7
 ```
 
 Tras la transformación, la variancia para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varianza y media vemos que la primera no toma una tendencia en función de la segunda.
@@ -239,9 +245,11 @@ Tras la transformación, la variancia para los diferentes grupos de observacione
 Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una jerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses.
 
 ```{r}
-ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f8 = ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
 
 monthplot(bcser)
+
+f8
 ```
 
 Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie.
@@ -254,7 +262,7 @@ $$(1-B^{12})X_t$$
 
 ```{r}
 d12bcser = diff(bcser,12)
-plot_ly() %>%
+f9 = plot_ly() %>%
   add_trace(x=~time(d12bcser), y=~d12bcser,
             type = "scatter",
             fill="tonexty",
@@ -272,6 +280,7 @@ plot_ly() %>%
   layout(title='<b> Time Series after seasonal differentation <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')) 
+f9
 ```
 
 ```{r}
@@ -281,7 +290,8 @@ monthplot(d12bcser)
 Tras la transformación se puede observar en el gráfico de arriba que las subseries de los meses presentan una misma media, forman una línea casi perfecta horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo.
 
 ```{r}
-ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f11 = ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f11
 ```
 
 Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón estacional.
@@ -309,7 +319,7 @@ Tras el proceso de transformaciones, únicamente se ha requerido una diferenciac
 $$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \ \lambda≃0.395$$
 
 ```{r}
-plot_ly() %>%
+f12 = plot_ly() %>%
   add_trace(x=~time(d1d12bcser), y=~d1d12bcser,
             type = "scatter",
             fill="tonexty",
@@ -327,6 +337,7 @@ plot_ly() %>%
   layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')) 
+f12
 ```
 
 ### Modelos propuestos
@@ -334,7 +345,8 @@ plot_ly() %>%
 Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de la serie tras haberle aplicado las transformaciones.
 
 ```{r}
-ts_cor(d1d12bcser, lag.max = 72)
+f13 = ts_cor(d1d12bcser, lag.max = 72)
+f13
 ```
 
 Si bien es cierto que se observa cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
@@ -469,8 +481,10 @@ En términos de la variancia, vemos una dispersión de los residuos alrededor de
 
 ```{r}
 resi1 <- resid(m1)
+```
 
-plot_ly() %>%
+```{r}
+p1 = plot_ly() %>%
   add_trace(x=~time(bcser), y=~resi1,
             type = "scatter",
             fill="tonexty",
@@ -493,34 +507,37 @@ plot_ly() %>%
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)'))
 
-```
-
-En cuanto a la volatilidad de la serie se puede mencionar que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados.
-
-No obstante, la variancia de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una variancia creciente en comparación con el inicio de la misma. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una curvatura a lo largo de los residuos, además de tener intervalos de confianza de mayor amplitud hacia el final de las observaciones.
-
-```{r}
-# scatter.smooth(sqrt(abs(resi1)), lpars=list(col=2))
-
-ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
   xlab("Time") + ylab("abs(residuals 1)") +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 
-ggplotly(ggfig)
+f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+  layout(title='<b> Constant Variance plots <b>')
+f14
 ```
 
-CONCLUSION
+
+En cuanto a la volatilidad de la serie se puede mencionar que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados.
+
+No obstante, la variancia de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una variancia creciente en comparación con el inicio de la misma. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una curvatura a lo largo de los residuos, además de tener intervalos de confianza de mayor amplitud hacia el final de las observaciones.
+
+De manera que la condición de variancia constante para el modelo 1 no es definitiva, como consecuencia de la presencia de outliers. Después de la aplicación del tatamiento de atípicos se espera una mejora considerable.
+
 
 #### Modelo 2
 
 ```{r}
 resi2 <- resid(m2)
+```
 
-plot_ly() %>%
+
+
+```{r}
+p1 = plot_ly() %>%
   add_trace(x=~time(bcser), y=~resi2,
             type = "scatter",
             fill="tonexty",
@@ -543,46 +560,40 @@ plot_ly() %>%
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)'))
 
-```
-
-```{r}
-ggfig = ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
   xlab("Time") + ylab("abs(residuals 2)") +
   ggtitle(" <b> Absolute value of model 2 residuals <b>") +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)))
 
-ggplotly(ggfig)
+f15 = subplot(p1, p2, nrows=2, shareX = T) %>%
+  layout(title='<b> Constant Variance plots <b>')
+f15
 ```
 
 ### Hipótesis de normalidad de residuos
 
+...
+
 #### Modelo 1
 
-...
+Como mencionado en el ánalisis de la variancia, se detectan posibles outliers que incluso sobrepasan los intervalos de confianza del gráfico de cuartiles. Por otro lado, es razonable decir que la normalidad de los reiduos es bastante evidente, pues las muestras se ajustan fielmente con los cuantiles teóricos bajo la distribución de la normalidad.
 
 ```{r}
 ggplot(data=NULL, aes(sample=resi1)) +
-  stat_qq_band(color='#1F968BFF', fill='#1F968BFF') +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
-  stat_qq_point(color="#440154FF", fill='#440154FF', shape=21) +
+  stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
   theme_bw() +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-
-ggfig = ggplot(data=NULL, aes(sample=resi1)) +
-  geom_qq(color="darkblue", fill='blue', shape=21) +
-  geom_qq_line(color='purple') +
-  theme_bw() +
-  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
-  ggtitle(" <b> Normal Q-Q Plot <b>") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-ggplotly(ggfig)
 ```
+
+
+También se observa una simetría en los residuos visualmente del histograma. Tras realizar el test de *Shapiro-Wilk* se observa que el *pvalor* del test es superior al grado de significación, por lo que confirma la decisión de asumir la normalidad de los residuos.
 
 ```{r}
 hist(resi1,breaks=20, freq=FALSE)
@@ -621,13 +632,17 @@ shapiro.test(resi1)
 
 ### Independencia de residuos
 
+...
+
 #### Modelo 1
 
-...
+En cuanto a los retrasos estacionales, el retraso número 60 sobresale de los límites de confianza, sin embargo al tratarse de un restraso considerablemente lejos del origen puede considerarse como fruto del azar y no tenerse en cuenta. Esta suposición se confirma con el el test estadistico de Ljung-Box. Con respecto a la componente regular de los residuos, se puede afirmar que presentan una estructura similar a un *White Noise*, ya que no presentan significación alguna, ni cerca ni lejos del origen.
 
 ```{r}
 ts_cor(resi1, lag.max = 72)
 ```
+
+Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótisis de independencia de residuos para el modelo 1.
 
 ```{r}
 tsdiag(m1,gof.lag=72)
@@ -650,7 +665,8 @@ convergan, de modo que se pueda expresar como un $\mbox{MA}(\infty)$. Lo cuál s
 
 Para asegurar la invertibilidad de un modelo, se ha de comprobar, de manera análoga, que los pesos $\pi_i$ de
 
-$$\pi(B) = \frac{\phi_p(B)}{\theta_q(B)}$$ tengan convergencia, de modo que se obtenga una expresión $\mbox{AR}(\infty)$. Bajo esta propiedad y con el uso de observaciones pasadas será posible el cálculo de las predicciones puntuales en el apartado de predicciones.
+$$\pi(B) = \frac{\phi_p(B)}{\theta_q(B)}$$ 
+tengan convergencia, de modo que se obtenga una expresión $\mbox{AR}(\infty)$. Bajo esta propiedad y con el uso de observaciones pasadas será posible el cálculo de las predicciones puntuales en el apartado de predicciones.
 
 #### Modelo 1
 
@@ -730,4 +746,18 @@ ggplotly(ggfig)
 
 ...
 
+
+
+
+
+
+
 .
+
+```{r}
+# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15)
+# n = length(f)
+# for (i in 1:n) {
+#   orca(f[[i]], paste0("./Figures/f",i,".png"))
+# }
+```
