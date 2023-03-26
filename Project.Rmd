@@ -113,7 +113,7 @@ En azul marino, la componente estacional muestra un pico en el número de export
 
 ...
 
-## Metodología
+## Descripción sintética
 
 Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins.
 
@@ -125,9 +125,6 @@ Una vez consolidados los modelos propuestos, se estudiarán las propiedades de e
 
 Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. Esto tiene el fin de poder mejorar las predicciones en cada uno de los modelos para poder así discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
 
-## Descripción sintética
-
-...
 
 # Resultados e interpretación
 
@@ -344,8 +341,6 @@ Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de 
 ```{r}
 f13 = ts_cor(d1d12bcser, lag.max = 72)
 f13
-#acf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(2,rep(1,11)))
-#pacf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(rep(1,11),2))
 ```
 
 Si bien es cierto que se observa cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
@@ -358,25 +353,20 @@ Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y
 
 Aun sabiendo que los retrasos del ACF no presentan un decreciemiento evidente, se podría considerar una media móvil de parámetro $q=6$ MA(6). Aunque los retrasos intermedios no presentan significación clara, el sexto retraso esatcional si es significativo. Esta propuesta incorpora al modelo una mayor complejidad en comparación con la parte autoregresiva propuesta con antelación, con lo que nos decantaremos inicialmente por mantener una parte AR(4) o bien proponer un ARMA que explique esta parte estacional, pero no se desechará el MA(6) hasta haber ajustado algunos modelos.
 
-La decisión de presentar un ARMA estacional se debe a que las posibildades propuestas contienen un número considerable de parámetros. Tras experimentar con los casos que no superasen el número de parámetros mínimo ya presente (4 del AR(4)), se ha llegado a la conclusión, analizando la significación de los coeficientes y el AIC de cada opción (estos modelos se han ajustado con las mejores opciones regulares explicadas a continuación), de que el ARMA(2,2) y el ARMA(2,1) son los más adecuados junto al AR(4) y el MA(6). Todas las opciones son versátiles ya que pueden explicar retrasos que con opciones más simples no se considerasen y además permiten ser reducidos en caso necesario si algún coeficiente no es significativo.
+La decisión de presentar un ARMA estacional se debe a que las posibildades propuestas contienen un número considerable de parámetros. Tras experimentar con los casos que no superasen el número de parámetros mínimo ya presente (4 del AR(4)), se ha llegado a la conclusión, _analizando la significación de los coeficientes y el AIC de cada opción (estos modelos se han ajustado con las mejores opciones regulares explicadas a continuación)_, de que el ARMA(2,2) y el ARMA(2,1) son los más adecuados junto al AR(4) y el MA(6). Todas las opciones son versátiles ya que pueden explicar retrasos que con opciones más simples no se considerasen y además permiten ser reducidos en caso necesario si algún coeficiente no es significativo.
 
 Para la parte regular resulta muy evdiente que la mejor opción es un AR(2), debido a que son los únicos dos retrasos con obvia significación. El resto de barras muestran este decreciemiento ya mencionado y aunque algunas sobresalen, estan suficientemente lejos del origen como para considerarse como fruto del $5%$ de azar en las observaciones.
 
 No obstante, considerando únicamente un número limitado de los primeros retrasos del ACF, una propuesta MA(4) sería suficiente, pese a que se obviarían los retrasos siguientes. Por lo que se tendría que suponer que los retrasos significativos lejos del origen actúan como satélites de los retrasos estacionales.
 
-Por el elevado número de parámetros propuestos, se estudiará proponer un modelo ARMA para reducir la complejidad del modelo, mientras que se busca una explicación conjunta para el modelo.
+Por el elevado número de parámetros propuestos, se estudiará proponer un modelo ARMA para reducir la complejidad del modelo también en la componente regular. Para reconocer cual es el modelo ARMA regular más adecuado, se han estudiado distintas combinaciones teniendo como base ARMA(1,1), ARMA(1,2), ARMA(2,1) y ARMA(2,2). Finalmente, teniendo en cuenta el AIC en primer lugar y la significación de parámetros en segundo lugar, las mejores opciones para la parte regular son el AR(2) y el ARMA(2,1).
 
-Para reconocer cual es el modelo ARMA regular más adecuado, se han estudiado distintas combinaciones teniendo como base ARMA(1,1), ARMA(1,2), ARMA(2,1) y ARMA(2,2).
+Como se ha explicado, se han ajustados una gran cantidad de modelos para encontrar estos candidatos y para confirmar los que se identificaban a primera vista analizando el ACF y el PACF de la serie. Los cuatro mejores modelos identificados (en función principalmente del AIC) han sido los siguientes:
 
-Finalmente, teniendo en cuenta el AIC en primer lugar y la significación de parámetros en segundo lugar, las mejores opciones para la parte regular son el AR(2) y el ARMA(2,1).
-
-Como se ha explicado, se han ajustados una gran cantidad de modelos para encontrar estos candidatos y para confirmar los que se identificaban a primera vista analizando el ACF y el PACF de la serie. Los cuatro mejores modelos (en función principalmente del AIC) han sido los siguientes :
-
-$$\mbox{ARIMA}(2,1,0)(0,1,6)_{12}$$ 
+$$\mbox{ARIMA}(2,1,0)(0,1,6)_{12}$$
 $$\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$$ 
 $$\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$$ 
 $$\mbox{ARIMA}(2,1,1)(2,1,1)_{12}$$ 
-Para anlizarlos ajustaremos sobre la serie ya diferenciada:
 
 ```{r}
 arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(0,0,6), period=12))
@@ -389,14 +379,15 @@ arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
 
 ```
 
-1: sma3, sma4, sma5
-2: ma1
-3: sma2 (es significativo pero tiene 2 casi justo de t-ratio)
-4: ma1, sar1 (por muy poco 1.96) 
+Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. 
 
-Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. El primer modelo tiene tres parámetros no significativos: sma3, sma4 y sma5, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. El segundo modelo propuesto solo tiene un parámetro no significativo ma1, que tiene un T-ratio de aproximadamente 1.64. A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que su parámetro sma2 roza el límite con un valor de 2.009. El cuarto modelo presenta el parámetro ma1 no significativo, con un T-ratio de aproximadamente 1.58, y el parámetro sar1, que consta con un T-ratio cerca de 1.96 y que podría considerarse como significativo sin problemas.
+El primer modelo tiene tres parámetros no significativos: $\Theta_3$, $\Theta_4$ y $\Theta_6$, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. 
 
-Teniendo en cuenta esto, y la comparación de los AIC, hay dos modelos que sobresalen en ambos casos. Estos son el modelo 2 ARMA(2,1)AR(4), y el modelo 3 AR(2)ARMA(2,2), con AIC's -190.12 y -189.7 respectivamente y siendo también los dos modelos con una mejor significación de parámetros.
+El segundo modelo propuesto solo tiene un parámetro no significativo $\theta_1$, que tiene un $t$-ratio de aproximadamente $1.64$. A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que la significación del parámetro $\Theta_2$ roza el límite con un valor de $2.009$.
+
+El cuarto modelo presenta el parámetro $\theta_1$ no significativo, con un $t$-ratio de aproximadamente $1.58$, y el parámetro $\Phi_1$, que consta con un $t$-ratio cerca de $1.96$ y que podría considerarse como significativo, en funcíon del AIC.
+
+Teniendo en cuenta esto, y la comparación de los AIC, hay dos modelos que sobresalen en ambos casos. Estos son el modelo $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$, y el modelo $\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$, con AIC's $-190.12$ y $-189.7$ respectivamente. Siendo también los dos modelos con una mejor significación de parámetros. Tales modelos pasarán a la fase de estimación y validación a continuación.
 
 ### Estimación modelo 1
 
@@ -432,7 +423,7 @@ m1 = arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12))
 m1
 ```
 
-Verificamos que la decisión de retirar la media del modelo ha sido la adecuada  ya que obtenemos un AIC menor, lo que indica la mejoría del ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
+Verificamos que la decisión de retirar la media del modelo ha sido la adecuada ya que obtenemos un AIC menor, lo que indica la mejoría del ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
 
 Bajo la misma hipótesis, se comprobará la significación de los estimadores del modelo.
 
@@ -447,7 +438,7 @@ arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12),
            fixed=c(NA,NA,0,NA,NA,NA,NA))
 ```
 
-En vista de que el AIC ha aumentado tras eliminar $\hat{\theta_1}$, se considerará que el modelo incial es más adecuado. 
+En vista de que el AIC ha aumentado tras eliminar $\hat{\theta_1}$, se considerará que el modelo incial es más adecuado.
 
 El resto de parámetros si son significativos, como se ha visto anteriormente, con lo que el modelo estimado $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ resultante es:
 
@@ -493,11 +484,12 @@ En términos de la variancia, vemos una dispersión de los residuos alrededor de
 
 ```{r}
 resi1 <- resid(m1)
+resi1 <- window(resi1, start=c(2000,2))
 ```
 
 ```{r}
 p1 = plot_ly() %>%
-  add_trace(x=~time(bcser), y=~resi1,
+  add_trace(x=~time(d1d12bcser), y=~resi1,
             type = "scatter",
             fill="tonexty",
             line = list(color = "#2a788e"),
@@ -505,12 +497,12 @@ p1 = plot_ly() %>%
             mode="lines",
             name='Residuals of model 1'
             ) %>%
-  add_lines(x=~time(bcser), y=~-3*sd(resi1),
+  add_lines(x=~time(d1d12bcser), y=~-3*sd(resi1),
             fill=F,
             line=list(color='#440154',dash='dot'),
             name='Lower IC limit'
             ) %>%
-  add_lines(x=~time(bcser), y=~3*sd(resi1),
+  add_lines(x=~time(d1d12bcser), y=~3*sd(resi1),
             fill=F,
             line=list(color='#440154', dash='dot'),
             name="Upper IC limit"
@@ -519,7 +511,7 @@ p1 = plot_ly() %>%
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)'))
 
-p2 = ggplotly(ggplot(data=NULL, aes(x=time(bcser), y=abs(resi1))) +
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi1))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
@@ -542,11 +534,12 @@ De manera que la condición de variancia constante para el modelo 1 no es defini
 
 ```{r}
 resi2 <- resid(m2)
+resi2 <- window(resi2, start=c(2000,2))
 ```
 
 ```{r}
 p1 = plot_ly() %>%
-  add_trace(x=~time(bcser), y=~resi2,
+  add_trace(x=~time(d1d12bcser), y=~resi2,
             type = "scatter",
             fill="tonexty",
             line = list(color = "#2a788e"),
@@ -554,12 +547,12 @@ p1 = plot_ly() %>%
             mode="lines",
             name='Residuals of model 2'
             ) %>%
-  add_lines(x=~time(bcser), y=~-3*sd(resi2),
+  add_lines(x=~time(d1d12bcser), y=~-3*sd(resi2),
             fill=F,
             line=list(color='#440154',dash='dot'),
             name='Lower IC limit'
             ) %>%
-  add_lines(x=~time(bcser), y=~3*sd(resi2),
+  add_lines(x=~time(d1d12bcser), y=~3*sd(resi2),
             fill=F,
             line=list(color='#440154', dash='dot'),
             name="Upper IC limit"
@@ -568,7 +561,7 @@ p1 = plot_ly() %>%
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)'))
 
-p2 = ggplotly(ggplot(data=NULL, aes(x=time(bcser), y=abs(resi2))) +
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi2))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
@@ -590,7 +583,7 @@ f15
 Como mencionado en el ánalisis de la variancia, se detectan posibles outliers que incluso sobrepasan los intervalos de confianza del gráfico de cuartiles. Por otro lado, es razonable decir que la normalidad de los reiduos es bastante evidente, pues las muestras se ajustan fielmente con los cuantiles teóricos bajo la distribución de la normalidad.
 
 ```{r}
-ggplot(data=NULL, aes(sample=resi1)) +
+f16 = ggplot(data=NULL, aes(sample=resi1)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -598,6 +591,7 @@ ggplot(data=NULL, aes(sample=resi1)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
+f16
 ```
 
 También se observa una simetría en los residuos visualmente del histograma. Tras realizar el test de *Shapiro-Wilk* se observa que el *pvalor* del test es superior al grado de significación, por lo que confirma la decisión de asumir la normalidad de los residuos.
@@ -606,7 +600,7 @@ También se observa una simetría en los residuos visualmente del histograma. Tr
 hist(resi1,breaks=20, freq=FALSE)
 d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 
-plot_ly() %>%
+f17 = plot_ly() %>%
   add_histogram(x=~resi1,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -629,6 +623,7 @@ plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
+f17
 ```
 
 ```{r}
@@ -636,6 +631,54 @@ shapiro.test(resi1)
 ```
 
 #### Modelo 2
+
+```{r}
+f18 = ggplot(data=NULL, aes(sample=resi2)) +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
+  stat_qq_line(color='#39568CFF') +
+  stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle("Normal Q-Q Plot") +
+  theme(plot.title = element_text(hjust = 0.5))
+f18
+```
+
+También se observa una simetría en los residuos visualmente del histograma. Tras realizar el test de *Shapiro-Wilk* se observa que el *pvalor* del test es superior al grado de significación, por lo que confirma la decisión de asumir la normalidad de los residuos.
+
+```{r}
+hist(resi2,breaks=20, freq=FALSE)
+d <- curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
+
+f19 = plot_ly() %>%
+  add_histogram(x=~resi2,
+        name="Model 1 residuals",
+        marker = list(color = "#22a884",
+                      line = list(color = "#2a788e", width = 2))
+        ) %>%
+  add_trace(x=~d$x, y=~d$y,
+            type = 'scatter',
+            mode = 'none',
+            name = "Density curve",
+            fill = "tozeroy",
+            fillcolor="rgba(168, 216, 234, 0.5)",
+            yaxis = "y2"
+            ) %>% 
+  layout(yaxis2 = list(overlaying = "y", side = "right", title = "",
+                       zeroline = FALSE,
+                       showline = FALSE,
+                       showticklabels = FALSE,
+                       showgrid = FALSE),
+         title='<b> Histogram of model 1 residuals <b>',
+         xaxis=list(title='Residuals'),
+         yaxis=list(title='Density')
+         )
+f19
+```
+
+```{r}
+shapiro.test(resi2)
+```
 
 ### Independencia de residuos
 
@@ -646,20 +689,25 @@ shapiro.test(resi1)
 En cuanto a los retrasos estacionales, el retraso número 60 sobresale de los límites de confianza, sin embargo al tratarse de un restraso considerablemente lejos del origen puede considerarse como fruto del azar y no tenerse en cuenta. Esta suposición se confirma con el el test estadistico de Ljung-Box. Con respecto a la componente regular de los residuos, se puede afirmar que presentan una estructura similar a un *White Noise*, ya que no presentan significación alguna, ni cerca ni lejos del origen.
 
 ```{r}
-ts_cor(resi1, lag.max = 72)
+resi1 <- resid(m1)
+f20 = ts_cor(resi1, lag.max = 72)
+f20
 ```
 
-Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótisis de independencia de residuos para el modelo 1.
+Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótesis de independencia de residuos para el modelo 1.
 
 ```{r}
-tsdiag(m1,gof.lag=72)
+f21 = tsdiag(m1,gof.lag=72)
+f21
 ```
+
 
 #### Modelo 2
 
 ```{r}
-ts_cor(resi2, lag.max = 72)
-tsdiag(m2,gof.lag=72)
+f22 = ts_cor(resi2, lag.max = 72)
+f23 = tsdiag(m2,gof.lag=72)
+f22; f23
 ```
 
 ### Propiedad de causalidad y/o estacionalidad
@@ -689,13 +737,12 @@ Mod(polyroot(c(1,m1$model$theta)))
 ```
 
 ```{r}
-ggfig <- autoplot(m1) +
+f24 = ggplotly(autoplot(m1) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model 1 <b>") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-ggplotly(ggfig)
+  theme(plot.title = element_text(hjust = 0.5)))
+f24
 ```
 
 Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el modelo 1 es tanto causal como invertible.
@@ -711,22 +758,51 @@ Mod(polyroot(c(1,m2$model$theta)))
 ```
 
 ```{r}
-ggfig <- autoplot(m2) +
+f25 = ggplotly(autoplot(m2) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model 1 <b>") +
-  theme(plot.title = element_text(hjust = 0.5))
-
-ggplotly(ggfig)
+  theme(plot.title = element_text(hjust = 0.5)))
+f25
 ```
 
 ### Estabilidad
 
+```{r}
+last=c(2017,12); train=window(ser, end=last)
+```
+
 #### Modelo 1
+
+```{r}
+bctrain = (train^lambda-1)/lambda
+
+m1_train <- arima(bctrain, order=c(2,1,1),
+                  seasonal=list(order=c(4,1,0), period=12))
+m1_train
+m1
+```
+
+```{r}
+cat("\nT-ratios:",round(m1_train$coef/sqrt(diag(m1_train$var.coef)),2))
+cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
+```
 
 ...
 
 #### Modelo 2
+
+```{r}
+m2_train <- arima(bctrain, order=c(2,1,0),
+                  seasonal=list(order=c(2,1,2), period=12))
+m2_train
+m2
+```
+
+```{r}
+cat("\nT-ratios:",round(m2_train$coef/sqrt(diag(m2_train$var.coef)),2))
+cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
+```
 
 ## Previsiones
 
@@ -734,15 +810,125 @@ ggplotly(ggfig)
 
 ...
 
+```{r}
+pre1 = predict(m1_train, n.ahead=12)
+
+
+pr1 = (lambda*(pre1$pred)+1)^(1/lambda)
+
+tl1 = pre1$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*pre1$se
+tl1 = (lambda*(tl1)+1)^(1/lambda)
+
+tu1 = pre1$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*pre1$se
+tu1 = (lambda*(tu1)+1)^(1/lambda)
+```
+
+```{r}
+ts.plot(ser,tl1,tu1,pr1,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2016,2019),
+type="o"); abline(v=2016:2019,lty=3,col=4)
+
+
+myforecast <- forecast(m1_train, h=12)
+plot(myforecast, xlim=c(2016,2019))
+plot_forecast(myforecast)
+```
+
 #### Modelo 2
+
+```{r}
+pre2 = predict(m2_train, n.ahead=12)
+
+
+pr2 = (lambda*(pre2$pred)+1)^(1/lambda)
+
+tl2 = pre2$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*pre2$se
+tl2 = (lambda*(tl2)+1)^(1/lambda)
+
+tu2 = pre2$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*pre2$se
+tu2 = (lambda*(tu2)+1)^(1/lambda)
+```
+
+```{r}
+ts.plot(ser,tl2,tu2,pr2,lty=c(1,2,2,1),col=c(1,4,4,2),xlim=c(2016,2019),
+type="o"); abline(v=2016:2019,lty=3,col=4)
+
+
+myforecast <- forecast(m2_train, h=12)
+plot(myforecast, xlim=c(2016,2019))
+plot_forecast(myforecast)
+```
+
+## Selección
+
+### Medidas de capacidad de predicción
+
+```{r}
+start=c(2017,12); last=c(2018,12);
+obs = window(ser, start = start, end = last)
+```
+
+#### Modelo 1
+
+```{r}
+cat("RMSPE1: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
+cat("MAPE1: ", mean(abs(obs-pr1)/obs))
+```
+
+#### Modelo 2
+
+```{r}
+cat("RMSPE2: ", sqrt(mean(((obs-pr2)/obs)^2)), "\n")
+cat("MAPE2: ", mean(abs(obs-pr2)/obs))
+```
+
+### Intervalos de confianza
+
+#### Modelo 1
+
+```{r}
+cat("Mean length of IC for model 1: ",mean(tu1-tl1))
+
+```
+
+#### Modelo 2
+
+```{r}
+cat("Mean length of IC for model 2: ",mean(tu2-tl2))
+```
+
+MEJORES INTERVALOS EN M2, PERO LA VARIANCIA NO ES CONSTANTE XD
+
+### Medidas de adecuación a los datos
+
+```{r}
+cat("AIC modelo 1: ", AIC(m1), "\n")
+cat("AIC modelo 2: ", AIC(m2), "\n")
+cat("BIC modelo 1: ", BIC(m1), "\n")
+cat("BIC modelo 2: ", BIC(m2), "\n")
+```
+
+## Tratamiento de efectos de calendario
+
+```{r}
+source("Practicas/calendarEffects.r")
+```
+
+```{r}
+start = c(1990,1,length(ser))
+vEa = Weaster(inici)
+VEa
+```
+
+```{r}
+vTD = Wtrad(inici)
+vTD
+```
 
 ## Tratamiento de atípicos
 
 #### Modelo 1
 
 ...
-
-#### Modelo 2
 
 # Conclusiones y discusión
 
@@ -755,7 +941,7 @@ ggplotly(ggfig)
 .
 
 ```{r}
-# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15)
+# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25)
 # n = length(f)
 # for (i in 1:n) {
 #   orca(f[[i]], paste0("./Figures/f",i,".png"))
