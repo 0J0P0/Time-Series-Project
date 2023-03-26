@@ -344,8 +344,8 @@ Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de 
 ```{r}
 f13 = ts_cor(d1d12bcser, lag.max = 72)
 f13
-acf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(2,rep(1,11)))
-pacf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(rep(1,11),2))
+#acf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(2,rep(1,11)))
+#pacf(d1d12bcser, ylim=c(-1,1), lag.max = 72, lwd=2, col=c(rep(1,11),2))
 ```
 
 Si bien es cierto que se observa cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
@@ -370,9 +370,13 @@ Para reconocer cual es el modelo ARMA regular más adecuado, se han estudiado di
 
 Finalmente, teniendo en cuenta el AIC en primer lugar y la significación de parámetros en segundo lugar, las mejores opciones para la parte regular son el AR(2) y el ARMA(2,1).
 
-Como se ha explicado, se han ajustados una gran cantidad de modelos para encontrar estos candidatos y para confirmar los que se identificaban a primera vista analizando el ACF y el PACF de la serie. Los cuatro mejores modelos (en función principalmente del AIC) han sido los siguientes:
+Como se ha explicado, se han ajustados una gran cantidad de modelos para encontrar estos candidatos y para confirmar los que se identificaban a primera vista analizando el ACF y el PACF de la serie. Los cuatro mejores modelos (en función principalmente del AIC) han sido los siguientes :
 
-*PONERLOS EN BONITO EN EL LATEX*
+$$\mbox{ARIMA}(2,1,0)(0,1,6)_{12}$$ 
+$$\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$$ 
+$$\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$$ 
+$$\mbox{ARIMA}(2,1,1)(2,1,1)_{12}$$ 
+Para anlizarlos ajustaremos sobre la serie ya diferenciada:
 
 ```{r}
 arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(0,0,6), period=12))
@@ -388,11 +392,11 @@ arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
 1: sma3, sma4, sma5
 2: ma1
 3: sma2 (es significativo pero tiene 2 casi justo de t-ratio)
-4: ma1, sar1 (por muy poco 1.96)
+4: ma1, sar1 (por muy poco 1.96) 
 
 Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. El primer modelo tiene tres parámetros no significativos: sma3, sma4 y sma5, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. El segundo modelo propuesto solo tiene un parámetro no significativo ma1, que tiene un T-ratio de aproximadamente 1.64. A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que su parámetro sma2 roza el límite con un valor de 2.009. El cuarto modelo presenta el parámetro ma1 no significativo, con un T-ratio de aproximadamente 1.58, y el parámetro sar1, que consta con un T-ratio cerca de 1.96 y que podría considerarse como significativo sin problemas.
 
-Teniendo en cuenta esto, y la comparación de los AIC, hay dos modelos que sobresalen en ambos casos. Estos son el modelo 2 ARMA(2,1)AR(4), y el modelo 3 AR(2)ARMA(2,2), con AIC's -190.12 y -189.7 y siendo los dos modelos con una mejor significación de parámetros.
+Teniendo en cuenta esto, y la comparación de los AIC, hay dos modelos que sobresalen en ambos casos. Estos son el modelo 2 ARMA(2,1)AR(4), y el modelo 3 AR(2)ARMA(2,2), con AIC's -190.12 y -189.7 respectivamente y siendo también los dos modelos con una mejor significación de parámetros.
 
 ### Estimación modelo 1
 
@@ -402,7 +406,7 @@ $$(1 - \phi_1 B - \phi_2 B^2)(1 - \Phi_1 B^{12} - \Phi_2 B^{24} - \Phi_3 B^{36} 
 
 Para la estimación del modelo 1 se ha de comprobar primeramente si la media de la serie es significativa o no.
 
-Se comprueba la significación de $\hat{\mu_1}$ mediante su $t$-ratio para determinar si es significante para el modelo, es decir, si se acepta la hipótesis nula de que la media es igual a 0.
+Se comprueba la significación de $\hat{\mu_1}$ mediante su $t$-ratio para determinar si es significante para el modelo, es decir, si se rechaza o no la hipótesis nula de que la media es igual a 0.
 
 $$H_0: \hat{\mu_1} = 0 \\ H_1: \hat{\mu_1} \neq 0$$
 
@@ -410,7 +414,7 @@ donde el $t$-ratio viene dado por
 
 $$t = \frac{\hat{\mu_1}}{S_{W_t}} \sim N(0,1)$$
 
-asintoticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud.
+asintoticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud. Para no poder rechazar la hipótesis nula, si queremos un nivel de confianza del 95%, el valor absoluto del t-ratio tendrá que ser menor que 2.
 
 ```{r}
 m1 = arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
@@ -421,14 +425,14 @@ m1
 cat("Is the mean significant?",abs(m1$coef[8]/sqrt(diag(m1$var.coef)[8])) > 2)
 ```
 
-Al no tener significación la media de la serie $\hat{\mu_1}$, se puede aplicar la función `arima` a la serie después de la transformación *Box-Cox*, aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre la serie transformada.
+Al no tener significación la media de la serie $\hat{\mu_1}$, se puede aplicar la función `arima` a la serie después de la transformación *Box-Cox*, aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre la serie transformada. Cabe recalcar que si que se deberá deshacer la transformación *Box-Cox* para tener las predicciones sobre la serie original.
 
 ```{r}
 m1 = arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12))
 m1
 ```
 
-Verificamos que la decisión de retirar la media del modelo ha sido la adecuada en terminos del AIC del nuevo ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
+Verificamos que la decisión de retirar la media del modelo ha sido la adecuada  ya que obtenemos un AIC menor, lo que indica la mejoría del ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
 
 Bajo la misma hipótesis, se comprobará la significación de los estimadores del modelo.
 
@@ -443,9 +447,9 @@ arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12),
            fixed=c(NA,NA,0,NA,NA,NA,NA))
 ```
 
-En vista de que el AIC ha aumentado tras eliminar $\hat{\theta_1}$, se considerará que el modelo incial es más adecuado.
+En vista de que el AIC ha aumentado tras eliminar $\hat{\theta_1}$, se considerará que el modelo incial es más adecuado. 
 
-El resto de parámetros si son significativos, como se ha visto anteriormente, con lo que el modelo estimado $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ es:
+El resto de parámetros si son significativos, como se ha visto anteriormente, con lo que el modelo estimado $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ resultante es:
 
 $$(1 + 0.7602 B + 0.3825 B^2)(1 + 0.5954 B^{12} + 0.6411 B^{24} + 0.4560 B^{36} + 0.4251 B^{48})(1-B)(1-B^{12})\frac{(X_t - \mu_1)^\lambda-1}{\lambda} = (1 + 0.2315 B)Z_t$$
 
