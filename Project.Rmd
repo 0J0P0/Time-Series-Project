@@ -944,20 +944,63 @@ cat("BIC modelo 2: ", BIC(m2), "\n")
 
 ## Tratamiento de efectos de calendario
 
+...
+
 ```{r}
 source("Practicas/calendarEffects.r")
 ```
 
+...
+
 ```{r}
 start = c(1990,1,length(ser))
-vEa = Weaster(inici)
+vEa = Weaster(start)
 VEa
 ```
 
+...
+
 ```{r}
-vTD = Wtrad(inici)
+vTD = Wtrad(start)
 vTD
 ```
+
+```{r}
+m1
+```
+
+...
+
+```{r}
+m1Ea = arima(bcser, order=c(2,1,1),
+             seasonal=list(order=c(4,1,0), period=12),
+             xreg = data.frame(vEa))
+m1Ea
+```
+
+...
+
+```{r}
+m1TD = arima(bcser, order=c(2,1,1),
+             seasonal=list(order=c(4,1,0), period=12),
+             xreg = data.frame(vTD))
+m1TD
+```
+
+...
+
+```{r}
+m1EC = arima(bcser, order=c(2,1,1),
+             seasonal=list(order=c(4,1,0), period=12),
+             xreg = data.frame(vEa,vTD))
+m1EC
+```
+
+...
+
+
+REIDENTIFICACION
+
 
 ## Tratamiento de atípicos
 
