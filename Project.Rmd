@@ -353,9 +353,9 @@ Comenzando por la parte estacional, se podría considerar ajustar AR(1), AR(2) y
 
 Aun sabiendo que los retrasos del ACF no presentan un decreciemiento evidente, se podría considerar una media móvil de parámetro $q=6$ MA(6). Aunque los retrasos intermedios no presentan significación clara, el sexto retraso esatcional si es significativo. Esta propuesta incorpora al modelo una mayor complejidad en comparación con la parte autoregresiva propuesta con antelación, con lo que nos decantaremos inicialmente por mantener una parte AR(4) o bien proponer un ARMA que explique esta parte estacional, pero no se desechará el MA(6) hasta haber ajustado algunos modelos.
 
-La decisión de presentar un ARMA estacional se debe a que las posibildades propuestas contienen un número considerable de parámetros. Tras experimentar con los casos que no superasen el número de parámetros mínimo ya presente (4 del AR(4)), se ha llegado a la conclusión, _analizando la significación de los coeficientes y el AIC de cada opción (estos modelos se han ajustado con las mejores opciones regulares explicadas a continuación)_, de que el ARMA(2,2) y el ARMA(2,1) son los más adecuados junto al AR(4) y el MA(6). Todas las opciones son versátiles ya que pueden explicar retrasos que con opciones más simples no se considerasen y además permiten ser reducidos en caso necesario si algún coeficiente no es significativo.
+La decisión de presentar un ARMA estacional se debe a que las posibildades propuestas contienen un número considerable de parámetros. Tras experimentar con los casos que no superasen el número de parámetros mínimo ya presente (4 del AR(4)), se ha llegado a la conclusión, basandose en el AIC de los modelos que se han ajustado, de que el ARMA(2,2) y el ARMA(2,1) son los más adecuados junto al AR(4) y el MA(6). Todas las opciones son versátiles ya que pueden explicar retrasos que con opciones más simples no se considerasen y además permiten ser reducidos en caso necesario si algún coeficiente no es significativo.
 
-Para la parte regular resulta muy evdiente que la mejor opción es un AR(2), debido a que son los únicos dos retrasos con obvia significación. El resto de barras muestran este decreciemiento ya mencionado y aunque algunas sobresalen, estan suficientemente lejos del origen como para considerarse como fruto del $5%$ de azar en las observaciones.
+Para la parte regular resulta muy evidente que la mejor opción es un AR(2), debido a que son los únicos dos retrasos con obvia significación. El resto de barras muestran este decreciemiento ya mencionado y aunque algunas sobresalen, estan suficientemente lejos del origen como para considerarse como fruto del $5%$ de azar en las observaciones.
 
 No obstante, considerando únicamente un número limitado de los primeros retrasos del ACF, una propuesta MA(4) sería suficiente, pese a que se obviarían los retrasos siguientes. Por lo que se tendría que suponer que los retrasos significativos lejos del origen actúan como satélites de los retrasos estacionales.
 
@@ -379,23 +379,25 @@ arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
 
 ```
 
-Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. 
+Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. Cabe mencionar que han sido ajustados teniendo como base la serie ya diferenciada, por lo que aparece el coeficiente de la media (intercept), que en ninguno de los casos resulta ser significativa.
 
-El primer modelo tiene tres parámetros no significativos: $\Theta_3$, $\Theta_4$ y $\Theta_6$, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. 
+El primer modelo tiene tres parámetros no significativos pertenecientes a la MA (*Moving Average*) de la parte estacional: $\Theta_3$, $\Theta_4$ y $\Theta_5$, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. 
 
-El segundo modelo propuesto solo tiene un parámetro no significativo $\theta_1$, que tiene un $t$-ratio de aproximadamente $1.64$. A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que la significación del parámetro $\Theta_2$ roza el límite con un valor de $2.009$.
+El segundo modelo propuesto solo tiene un parámetro no significativo $\theta_1$, perteneciente a la MA regular, que tiene un $t$-ratio de aproximadamente $1.64$. 
 
-El cuarto modelo presenta el parámetro $\theta_1$ no significativo, con un $t$-ratio de aproximadamente $1.58$, y el parámetro $\Phi_1$, que consta con un $t$-ratio cerca de $1.96$ y que podría considerarse como significativo, en funcíon del AIC.
+A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que la significación del parámetro $\Theta_2$, de la MA estacional, roza el límite con un valor de $2.009$.
+
+El cuarto modelo presenta el parámetro $\theta_1$ no significativo, con un $t$-ratio de aproximadamente $1.58$, y el parámetro $\Phi_1$, de la parte AR (*Auto-Regressive*) estacional, que consta con un $t$-ratio cerca de $1.96$ y que podría considerarse como significativo si fuese necesario, en función del cambio en el AIC suponerlo significativo o no.
 
 Teniendo en cuenta esto, y la comparación de los AIC, hay dos modelos que sobresalen en ambos casos. Estos son el modelo $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$, y el modelo $\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$, con AIC's $-190.12$ y $-189.7$ respectivamente. Siendo también los dos modelos con una mejor significación de parámetros. Tales modelos pasarán a la fase de estimación y validación a continuación.
 
-### Estimación modelo 1
+### Estimación Modelo 1
 
-El modelo 1 $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ de la forma:
+El Modelo 1 $\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$ es de la forma:
 
 $$(1 - \phi_1 B - \phi_2 B^2)(1 - \Phi_1 B^{12} - \Phi_2 B^{24} - \Phi_3 B^{36} - \Phi_4 B^{48})(1-B)(1-B^{12})\frac{(X_t - \mu_1)^\lambda-1}{\lambda} = (1+ \theta_1 B)Z_t$$
 
-Para la estimación del modelo 1 se ha de comprobar primeramente si la media de la serie es significativa o no.
+Para la estimación del Modelo 1 se ha de comprobar primeramente si la media de la serie es significativa o no.
 
 Se comprueba la significación de $\hat{\mu_1}$ mediante su $t$-ratio para determinar si es significante para el modelo, es decir, si se rechaza o no la hipótesis nula de que la media es igual a 0.
 
@@ -405,7 +407,7 @@ donde el $t$-ratio viene dado por
 
 $$t = \frac{\hat{\mu_1}}{S_{W_t}} \sim N(0,1)$$
 
-asintoticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud. Para no poder rechazar la hipótesis nula, si queremos un nivel de confianza del 95%, el valor absoluto del t-ratio tendrá que ser menor que 2.
+asintóticamente normal al tratarse de un estimador calculado a partir del estimador de máxima verosimilitud. Para no poder rechazar la hipótesis nula, si queremos un nivel de confianza del 95%, el valor absoluto del t-ratio tendrá que ser menor que 2.
 
 ```{r}
 m1 = arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
@@ -416,14 +418,14 @@ m1
 cat("Is the mean significant?",abs(m1$coef[8]/sqrt(diag(m1$var.coef)[8])) > 2)
 ```
 
-Al no tener significación la media de la serie $\hat{\mu_1}$, se puede aplicar la función `arima` a la serie después de la transformación *Box-Cox*, aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre la serie transformada. Cabe recalcar que si que se deberá deshacer la transformación *Box-Cox* para tener las predicciones sobre la serie original.
+Al no tener significación la media de la serie $\hat{\mu_1}$, se puede aplicar la función `arima` a la serie después de la transformación *Box-Cox*, aplicandole las diferenciaciones como parámetros a la función, de esta manera se evitan deshacer las transformaciones después y se puede predecir directamente sobre la serie transformada sin diferenciaciones. Es preciso saber que si que se deberá deshacer la transformación *Box-Cox* para tener las predicciones sobre la serie original.
 
 ```{r}
 m1 = arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12))
 m1
 ```
 
-Verificamos que la decisión de retirar la media del modelo ha sido la adecuada ya que obtenemos un AIC menor, lo que indica la mejoría del ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
+Verificamos que la decisión de retirar la media del modelo ha sido la adecuada ya que obtenemos un AIC menor, lo que indica la mejoría del ajuste. Además como $\hat{\mu_1}$ no es significativa, se ve que los valores de los estimadores de los coeficientes del modelo no han variado en gran escala, al igual que sus desviaciones estandar.
 
 Bajo la misma hipótesis, se comprobará la significación de los estimadores del modelo.
 
@@ -431,7 +433,7 @@ Bajo la misma hipótesis, se comprobará la significación de los estimadores de
 cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
 ```
 
-Se observa que el estimador del parámetro $\hat{\theta_1}$ está por debajo del borde del intervalo de confianza, por lo que ajustaremos un modelo eliminandolo y se compararán ambos modelos en terminos de su AIC.
+Se observa que el estimador del parámetro $\hat{\theta_1}$, tal y como se vió en el apartado anteriror, está por debajo del borde del intervalo de confianza, por lo que ajustaremos un modelo eliminandolo y se compararán ambos modelos en terminos de su AIC.
 
 ```{r}
 arima(bcser, order=c(2,1,1), seasonal=list(order=c(4,1,0), period=12),
@@ -444,11 +446,13 @@ El resto de parámetros si son significativos, como se ha visto anteriormente, c
 
 $$(1 + 0.7602 B + 0.3825 B^2)(1 + 0.5954 B^{12} + 0.6411 B^{24} + 0.4560 B^{36} + 0.4251 B^{48})(1-B)(1-B^{12})\frac{(X_t - \mu_1)^\lambda-1}{\lambda} = (1 + 0.2315 B)Z_t$$
 
-### Estimación modelo 2
+### Estimación Modelo 2
 
-El modelo 2 $\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$ de la forma:
+El Modelo 2 $\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$ es de la forma:
 
 $$(1 - \phi_1 B - \phi_2 B^2)(1 - \Phi_1 B^{12} - \Phi_2 B^{24})(1-B)(1-B^{12})\frac{(X_t - \mu_2)^\lambda-1}{\lambda} = (1+ \Theta_1 B^{12} + \Theta_2 B^{24})Z_t$$
+
+Se repetirán los mismos pasos que con el Modelo 1, comenzando por ajustar el modelo sobre la serie ya diferenciada para ver si la media es significativa.
 
 ```{r}
 m2 = arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
@@ -458,15 +462,18 @@ m2
 ```{r}
 cat("Is the mean significant?",abs(m2$coef[7]/sqrt(diag(m2$var.coef)[7])) > 2)
 ```
-
+Se confirma el hecho que ya se había observado en el apartado de Modelos Propuestos, la media no es significativa. Ahora es correcto ajustar el modelo con las diferenciaciones como parámetros de la función *arima*:
 ```{r}
 m2 = arima(bcser, order=c(2,1,0), seasonal=list(order=c(2,1,2), period=12))
 m2
 ```
+La disminución del AIC muestra que es acertado suponer que la media no es significativa. Esto también se observa en los valores de los coeficientes del modelo, que apenas varían tras la eliminación de la media.
 
+El siguiente paso es ver si el resto de los coeficientes son significativos.
 ```{r}
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
+Fijandóse en los T-ratios, se contempla que todos tienen un valor absoluto por encima de 2, indicando que el resto de parámetros si tienen significación en el modelo.
 
 ## Validación
 
@@ -474,13 +481,13 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 
 ### Variancia constante de residuos
 
-A modo de validar la condición de homocedasticidad de la variancia en los residuos, nos apoyaremos en el gráfico de residuos para diagnosticar la bondad de ajuste del modelo 1. Con la intención de detectar si el modelo captura completamente la estructura de la serie temporal.
+A modo de validar la condición de homocedasticidad (varianza constante) en los residuos, nos apoyaremos en el gráfico de estos con la intención de detectar si el modelo captura completamente la estructura de la serie temporal. Si los modelo es correcto en este aspecto, se esperan encontrar gráficos de los residuos similares a un ruido blanco, es decir, sin una gran cantidad de outliers que sobrepasen las bandas de probabilidad, sin una tendencia clara (aspecto que a priori ha sido tratado con la transformación *Box-Cox*), y sin clústeres de volatilidad que anulen la hipótesis de varianza constante.
 
 #### Modelo 1
 
-Observamos que los residuos del modelo 1 presentan dos valores por debajo del límite inferior de las bandas de probabilidad, lo cual respecta a $0.833%$ de los valores. A pesar de que no es un porcentaje elevado respecto a lo que consideramos indicativo de un problema, estos posibles valores atípicos del modelo serán comentados a profundidad en el apartado de tratamiento de atípicos.
+Observamos que los residuos del Modelo 1 presentan dos valores por debajo del límite inferior de las bandas de probabilidad, lo cual respecta a $0.833%$ de los valores. A pesar de que no es un porcentaje elevado respecto a lo que consideramos indicativo de un problema, estos posibles valores atípicos del modelo serán comentados a profundidad en el apartado de tratamiento de atípicos si este modelo es escogido como el más adecuado.
 
-En términos de la variancia, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro, lo que sugiere que el modelo genera una aproximación a las observaciones aceptable.
+En términos de la variancia, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro y sin presencia de los ya mencionados clústeres o grupos de volatilidad ya que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados. _Esto que sugiere que el modelo genera una aproximación a las observaciones aceptable._ NO COMPRENDO
 
 ```{r}
 resi1 <- resid(m1)
@@ -522,13 +529,13 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi1))) +
 f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
 f14
+
+scatter.smooth(sqrt(abs(resi1)), lpars = list(col=2))
 ```
 
-En cuanto a la volatilidad de la serie se puede mencionar que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados.
+No obstante, la variancia de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una variancia creciente en comparación con los residuos en el inicio de la serie. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una leve forma sinusoidal a lo largo de los residuos que tiene pendiente positiva hacia el final y con una tendencia general ligeramente lineal con pendiente positiva. Además, los intervalos de confianza de mayor amplitud se encuentran al inicio y hacia el final de las observaciones. No obstante, como ya se ha explicado, la tendencia observada es muy leve y no debería supone un gran problema.
 
-No obstante, la variancia de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una variancia creciente en comparación con el inicio de la misma. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una curvatura a lo largo de los residuos, además de tener intervalos de confianza de mayor amplitud hacia el final de las observaciones.
-
-De manera que la condición de variancia constante para el modelo 1 no es definitiva, como consecuencia de la presencia de outliers. Después de la aplicación del tatamiento de atípicos se espera una mejora considerable.
+Entonces, la condición de variancia constante para el Modelo 1 no es definitiva, como consecuencia principalmente de la presencia de outliers. Después de la aplicación del tatamiento de atípicos se espera una mejora considerable.
 
 #### Modelo 2
 
@@ -573,6 +580,10 @@ f15 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
 f15
 ```
+
+Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del Modelo 1. 
+
+Así pues, la hipótesis de homocedasticidad tampoco se puede establecer como definitva en este caso. Puesto a que ambos modelos tienen condiciones similares respecto a la variancia pero el segundo modelo cuenta con más atípicos, se considera que el primer modelo valida mejor que el segundo la hipótesis de variancia constante.
 
 ### Hipótesis de normalidad de residuos
 
@@ -694,7 +705,7 @@ f20 = ts_cor(resi1, lag.max = 72)
 f20
 ```
 
-Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótesis de independencia de residuos para el modelo 1.
+Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótesis de independencia de residuos para el Modelo 1.
 
 ```{r}
 f21 = tsdiag(m1,gof.lag=72)
@@ -724,13 +735,13 @@ $$\pi(B) = \frac{\phi_p(B)}{\theta_q(B)}$$ tengan convergencia, de modo que se o
 
 #### Modelo 1
 
-Al ver que todas las raices del polinomio de grado $50$ son mayores que la unidad, podemos confirmar que el modelo 1 es causal.
+Al ver que todas las raices del polinomio de grado $50$ son mayores que la unidad, podemos confirmar que el Modelo 1 es causal.
 
 ```{r}
 Mod(polyroot(c(1,-m1$model$phi)))
 ```
 
-Como solo hay una raíz para la componente de media móvil del modelo y tiene módulo mayor que 1, el modelo 1 también cumple con la caondición de invertible.
+Como solo hay una raíz para la componente de media móvil del modelo y tiene módulo mayor que 1, el Modelo 1 también cumple con la caondición de invertible.
 
 ```{r}
 Mod(polyroot(c(1,m1$model$theta)))
@@ -745,7 +756,7 @@ f24 = ggplotly(autoplot(m1) +
 f24
 ```
 
-Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el modelo 1 es tanto causal como invertible.
+Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el Modelo 1 es tanto causal como invertible.
 
 #### Modelo 2
 
@@ -936,10 +947,10 @@ MEJORES INTERVALOS EN M2, PERO LA VARIANCIA NO ES CONSTANTE XD
 ### Medidas de adecuación a los datos
 
 ```{r}
-cat("AIC modelo 1: ", AIC(m1), "\n")
-cat("AIC modelo 2: ", AIC(m2), "\n")
-cat("BIC modelo 1: ", BIC(m1), "\n")
-cat("BIC modelo 2: ", BIC(m2), "\n")
+cat("AIC Modelo 1: ", AIC(m1), "\n")
+cat("AIC Modelo 2: ", AIC(m2), "\n")
+cat("BIC Modelo 1: ", BIC(m1), "\n")
+cat("BIC Modelo 2: ", BIC(m2), "\n")
 ```
 
 ## Tratamiento de efectos de calendario
