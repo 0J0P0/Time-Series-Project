@@ -479,7 +479,7 @@ Fijandóse en los T-ratios, se contempla que todos tienen un valor absoluto por 
 
 ... (10 de 4)
 
-### varianza constante de residuos
+### Varianza constante de residuos
 
 A modo de validar la condición de homocedasticidad (varianza constante) en los residuos, nos apoyaremos en el gráfico de estos con la intención de detectar si el modelo captura completamente la estructura de la serie temporal. Si los modelo es correcto en este aspecto, se esperan encontrar gráficos de los residuos similares a un ruido blanco, es decir, sin una gran cantidad de outliers que sobrepasen las bandas de probabilidad, sin una tendencia clara (aspecto que a priori ha sido tratado con la transformación *Box-Cox*), y sin clústeres de volatilidad que anulen la hipótesis de varianza constante.
 
@@ -1012,12 +1012,316 @@ m1EC
 ...
 
 
-REIDENTIFICACION
+## Re-identificación modelo
+
+```{r}
+f13 = ts_cor(d1d12bcser, lag.max = 72)
+f13
+```
+
+## Estimación modelo con efectos de calendario
+
+...
+
+```{r}
+
+```
+
+...
+
+```{r}
+cat("\nT-ratios:",round(m$coef/sqrt(diag(m$var.coef)),2))
+```
+
+...
+
+```{r}
+
+```
+
+...
+
+## Validación
+
+...
+
+### Varianza constante de residuos
+
+...
+
+```{r}
+resi <- resid(m)
+resi <- window(resi, start=c(2000,2))
+```
+
+```{r}
+p1 = plot_ly() %>%
+  add_trace(x=~time(d1d12bcser), y=~resi,
+            type = "scatter",
+            fill="tonexty",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            mode="lines",
+            name='Residuals of model 1'
+            ) %>%
+  add_lines(x=~time(d1d12bcser), y=~-3*sd(resi),
+            fill=F,
+            line=list(color='#440154',dash='dot'),
+            name='Lower IC limit'
+            ) %>%
+  add_lines(x=~time(d1d12bcser), y=~3*sd(resi),
+            fill=F,
+            line=list(color='#440154', dash='dot'),
+            name="Upper IC limit"
+            ) %>%
+  layout(title='<b> Residuals of model 1 <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)'))
+
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi))) +
+  geom_smooth(fill="#2a788e") + 
+  geom_point(color="#440154", fill='#414487', shape=21) +
+  theme_bw() + 
+  xlab("Time") + ylab("abs(residuals 1)") +
+  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  theme(plot.title = element_text(hjust = 0.5)))
+
+f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+  layout(title='<b> Constant Variance plots <b>')
+f14
+
+scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
+```
+
+...
+
+### Hipótesis de normalidad de residuos
+
+...
+
+```{r}
+f16 = ggplot(data=NULL, aes(sample=resi)) +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
+  stat_qq_line(color='#39568CFF') +
+  stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle("Normal Q-Q Plot") +
+  theme(plot.title = element_text(hjust = 0.5))
+f16
+```
+
+...
+
+```{r}
+f17 = plot_ly() %>%
+  add_histogram(x=~resi,
+        name="Model 1 residuals",
+        marker = list(color = "#22a884",
+                      line = list(color = "#2a788e", width = 2))
+        ) %>%
+  add_trace(x=~d$x, y=~d$y,
+            type = 'scatter',
+            mode = 'none',
+            name = "Density curve",
+            fill = "tozeroy",
+            fillcolor="rgba(168, 216, 234, 0.5)",
+            yaxis = "y2"
+            ) %>% 
+  layout(yaxis2 = list(overlaying = "y", side = "right", title = "",
+                       zeroline = FALSE,
+                       showline = FALSE,
+                       showticklabels = FALSE,
+                       showgrid = FALSE),
+         title='<b> Histogram of model 1 residuals <b>',
+         xaxis=list(title='Residuals'),
+         yaxis=list(title='Density')
+         )
+f17
+```
+
+```{r}
+shapiro.test(resi)
+```
+
+...
+
+### Independencia de residuos
+
+...
+
+```{r}
+resi <- resid(m)
+f20 = ts_cor(resi, lag.max = 72)
+f20
+```
+
+...
+
+```{r}
+f21 = tsdiag(m1,gof.lag=72)
+f21
+```
+
+...
 
 
 ## Tratamiento de atípicos
 
-#### Modelo 1
+...
+
+
+## Re-identificación modelo
+
+```{r}
+f13 = ts_cor(d1d12bcser, lag.max = 72)
+f13
+```
+
+
+## Estimación modelo con efectos de calendario
+
+...
+
+```{r}
+
+```
+
+...
+
+```{r}
+cat("\nT-ratios:",round(m$coef/sqrt(diag(m$var.coef)),2))
+```
+
+...
+
+```{r}
+
+```
+
+...
+
+## Validación
+
+...
+
+### Varianza constante de residuos
+
+...
+
+```{r}
+resi <- resid(m)
+resi <- window(resi, start=c(2000,2))
+```
+
+```{r}
+p1 = plot_ly() %>%
+  add_trace(x=~time(d1d12bcser), y=~resi,
+            type = "scatter",
+            fill="tonexty",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            mode="lines",
+            name='Residuals of model 1'
+            ) %>%
+  add_lines(x=~time(d1d12bcser), y=~-3*sd(resi),
+            fill=F,
+            line=list(color='#440154',dash='dot'),
+            name='Lower IC limit'
+            ) %>%
+  add_lines(x=~time(d1d12bcser), y=~3*sd(resi),
+            fill=F,
+            line=list(color='#440154', dash='dot'),
+            name="Upper IC limit"
+            ) %>%
+  layout(title='<b> Residuals of model 1 <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)'))
+
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi))) +
+  geom_smooth(fill="#2a788e") + 
+  geom_point(color="#440154", fill='#414487', shape=21) +
+  theme_bw() + 
+  xlab("Time") + ylab("abs(residuals 1)") +
+  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  theme(plot.title = element_text(hjust = 0.5)))
+
+f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+  layout(title='<b> Constant Variance plots <b>')
+f14
+
+scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
+```
+
+...
+
+### Hipótesis de normalidad de residuos
+
+...
+
+```{r}
+f16 = ggplot(data=NULL, aes(sample=resi)) +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
+  stat_qq_line(color='#39568CFF') +
+  stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle("Normal Q-Q Plot") +
+  theme(plot.title = element_text(hjust = 0.5))
+f16
+```
+
+...
+
+```{r}
+f17 = plot_ly() %>%
+  add_histogram(x=~resi,
+        name="Model 1 residuals",
+        marker = list(color = "#22a884",
+                      line = list(color = "#2a788e", width = 2))
+        ) %>%
+  add_trace(x=~d$x, y=~d$y,
+            type = 'scatter',
+            mode = 'none',
+            name = "Density curve",
+            fill = "tozeroy",
+            fillcolor="rgba(168, 216, 234, 0.5)",
+            yaxis = "y2"
+            ) %>% 
+  layout(yaxis2 = list(overlaying = "y", side = "right", title = "",
+                       zeroline = FALSE,
+                       showline = FALSE,
+                       showticklabels = FALSE,
+                       showgrid = FALSE),
+         title='<b> Histogram of model 1 residuals <b>',
+         xaxis=list(title='Residuals'),
+         yaxis=list(title='Density')
+         )
+f17
+```
+
+```{r}
+shapiro.test(resi)
+```
+
+...
+
+### Independencia de residuos
+
+...
+
+```{r}
+resi <- resid(m)
+f20 = ts_cor(resi, lag.max = 72)
+f20
+```
+
+...
+
+```{r}
+f21 = tsdiag(m1,gof.lag=72)
+f21
+```
 
 ...
 
