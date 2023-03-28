@@ -125,7 +125,6 @@ Una vez consolidados los modelos propuestos, se estudiarán las propiedades de e
 
 Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. Esto tiene el fin de poder mejorar las predicciones en cada uno de los modelos para poder así discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
 
-
 # Resultados e interpretación
 
 ...
@@ -138,7 +137,7 @@ Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cu
 
 ...
 
-#### varianza constante
+#### Varianza constante
 
 Se pretende identificar algun tipo de tendencia en la serie que haga que la varianza no sea constante a lo largo de esto. Para ello se grafican mediciones de la media y la varianza de grupos consecutivos de entre 8-12 observaciones a modo de poder visualizar el comportamiento de la varianza de la serie.
 
@@ -186,7 +185,7 @@ lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper 
 bcser = (ser^lambda-1)/lambda
 ```
 
-La función `BoxCox.lambda()` de la librería **forecast** nos permite seleccionar de forma automática la mejor $\lambda$ posible bajo los criterios que se establezcan. En este caso, usando los métodos "*guerrero*" y "*loglik*" se busca, en primer lugar, una $\lambda$ que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de $\lambda$ se elige para maximizar el perfíl de la verosimilitud logarítmica de un modelo lineal ajustado a x.
+La función `BoxCox.lambda()` de la librería **forecast** nos permite seleccionar de forma automática la mejor $\lambda$ posible bajo los criterios que se establezcan. En este caso, usando los métodos "*guerrero*" y "*loglik*" se busca, en primer lugar, una $\lambda$ que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de $\lambda$ se elige para maximizar el perfíl de la verosimilitud logarítmica de un modelo lineal ajustado a la serie.
 
 Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
@@ -364,26 +363,34 @@ Por el elevado número de parámetros propuestos, se estudiará proponer un mode
 Como se ha explicado, se han ajustados una gran cantidad de modelos para encontrar estos candidatos y para confirmar los que se identificaban a primera vista analizando el ACF y el PACF de la serie. Los cuatro mejores modelos identificados (en función principalmente del AIC) han sido los siguientes:
 
 $$\mbox{ARIMA}(2,1,0)(0,1,6)_{12}$$
-$$\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$$ 
-$$\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$$ 
-$$\mbox{ARIMA}(2,1,1)(2,1,1)_{12}$$ 
 
 ```{r}
 arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(0,0,6), period=12))
-cat("---------------------------------------------------------------------")
-arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
-cat("---------------------------------------------------------------------")
-arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
-cat("---------------------------------------------------------------------")
-arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
+```
 
+$$\mbox{ARIMA}(2,1,1)(4,1,0)_{12}$$
+
+```{r}
+arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(4,0,0), period=12))
+```
+
+$$\mbox{ARIMA}(2,1,0)(2,1,2)_{12}$$
+
+```{r}
+arima(d1d12bcser, order=c(2,0,0), seasonal=list(order=c(2,0,2), period=12))
+```
+
+$$\mbox{ARIMA}(2,1,1)(2,1,1)_{12}$$
+
+```{r}
+arima(d1d12bcser, order=c(2,0,1), seasonal=list(order=c(2,0,1), period=12))
 ```
 
 Todos estos modelos tienen un AIC muy similar, por lo que nos fijaremos también en la significación de sus parámetros. Cabe mencionar que han sido ajustados teniendo como base la serie ya diferenciada, por lo que aparece el coeficiente de la media (intercept), que en ninguno de los casos resulta ser significativa.
 
-El primer modelo tiene tres parámetros no significativos pertenecientes a la MA (*Moving Average*) de la parte estacional: $\Theta_3$, $\Theta_4$ y $\Theta_5$, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen. 
+El primer modelo tiene tres parámetros no significativos pertenecientes a la MA (*Moving Average*) de la parte estacional: $\Theta_3$, $\Theta_4$ y $\Theta_5$, que coinciden con el previo análisis del ACF, donde se ha visto que el sexto retraso sobresale notablemente pero ni el tercero ni el cuarto ni el quinto lo hacen.
 
-El segundo modelo propuesto solo tiene un parámetro no significativo $\theta_1$, perteneciente a la MA regular, que tiene un $t$-ratio de aproximadamente $1.64$. 
+El segundo modelo propuesto solo tiene un parámetro no significativo $\theta_1$, perteneciente a la MA regular, que tiene un $t$-ratio de aproximadamente $1.64$.
 
 A diferencia de los demás, el tercer modelo no presenta ningún parámetro no significsativo, pero cabe mencionar que la significación del parámetro $\Theta_2$, de la MA estacional, roza el límite con un valor de $2.009$.
 
@@ -462,17 +469,22 @@ m2
 ```{r}
 cat("Is the mean significant?",abs(m2$coef[7]/sqrt(diag(m2$var.coef)[7])) > 2)
 ```
+
 Se confirma el hecho que ya se había observado en el apartado de Modelos Propuestos, la media no es significativa. Ahora es correcto ajustar el modelo con las diferenciaciones como parámetros de la función *arima*:
+
 ```{r}
 m2 = arima(bcser, order=c(2,1,0), seasonal=list(order=c(2,1,2), period=12))
 m2
 ```
+
 La disminución del AIC muestra que es acertado suponer que la media no es significativa. Esto también se observa en los valores de los coeficientes del modelo, que apenas varían tras la eliminación de la media.
 
 El siguiente paso es ver si el resto de los coeficientes son significativos.
+
 ```{r}
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
+
 Fijandóse en los T-ratios, se contempla que todos tienen un valor absoluto por encima de 2, indicando que el resto de parámetros si tienen significación en el modelo.
 
 ## Validación
@@ -487,7 +499,7 @@ A modo de validar la condición de homocedasticidad (varianza constante) en los 
 
 Observamos que los residuos del Modelo 1 presentan dos valores por debajo del límite inferior de las bandas de probabilidad, lo cual respecta a $0.833%$ de los valores. A pesar de que no es un porcentaje elevado respecto a lo que consideramos indicativo de un problema, estos posibles valores atípicos del modelo serán comentados a profundidad en el apartado de tratamiento de atípicos si este modelo es escogido como el más adecuado.
 
-En términos de la varianza, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro y sin presencia de los ya mencionados clústeres o grupos de volatilidad ya que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados. _Esto que sugiere que el modelo genera una aproximación a las observaciones aceptable._ NO COMPRENDO
+En términos de la varianza, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro y sin presencia de los ya mencionados clústeres o grupos de volatilidad ya que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados. *Esto que sugiere que el modelo genera una aproximación a las observaciones aceptable.* NO COMPRENDO
 
 ```{r}
 resi1 <- resid(m1)
@@ -581,7 +593,7 @@ f15 = subplot(p1, p2, nrows=2, shareX = T) %>%
 f15
 ```
 
-Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del Modelo 1. 
+Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del Modelo 1.
 
 Así pues, la hipótesis de homocedasticidad tampoco se puede establecer como definitva en este caso. Puesto a que ambos modelos tienen condiciones similares respecto a la varianza pero el segundo modelo cuenta con más atípicos, se considera que el primer modelo valida mejor que el segundo la hipótesis de varianza constante.
 
@@ -695,7 +707,7 @@ shapiro.test(resi2)
 
 ### Independencia de residuos
 
-La independencia de los residuos
+...
 
 #### Modelo 1
 
@@ -713,7 +725,6 @@ Además de la interpretación visual del ACF y PACF de los residuos, los pvalore
 f21 = tsdiag(m1,gof.lag=72)
 f21
 ```
-
 
 #### Modelo 2
 
@@ -1011,7 +1022,6 @@ m1EC
 
 ...
 
-
 ## Re-identificación modelo
 
 ```{r}
@@ -1165,11 +1175,9 @@ f21
 
 ...
 
-
 ## Tratamiento de atípicos
 
 ...
-
 
 ## Re-identificación modelo
 
@@ -1177,7 +1185,6 @@ f21
 f13 = ts_cor(d1d12bcser, lag.max = 72)
 f13
 ```
-
 
 ## Estimación modelo con efectos de calendario
 
