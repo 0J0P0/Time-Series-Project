@@ -655,7 +655,7 @@ shapiro.test(resi1)
 
 #### Modelo 2
 
-El segundo modelo presenta una presencia de outliers más alta y acentuada que el primer modelo, hecho que ya se había vislumbrado con el análisis de la varianza. Sin embargo, tal y como sucede con el primer modelo, parece que el ajuste a los cuantiles teóricos es aceptable.
+El segundo modelo presenta una presencia de outliers más alta y acentuada que el primer modelo, hecho que ya se había vislumbrado con el análisis de la varianza. Sin embargo, tal y como sucede con el primer modelo, parece que el ajuste a los cuantiles teóricos es aceptable puesto que los outliers serán tratados posteriormente si el modelo es seleccionado.
 
 ```{r}
 f18 = ggplot(data=NULL, aes(sample=resi2)) +
@@ -669,7 +669,7 @@ f18 = ggplot(data=NULL, aes(sample=resi2)) +
 f18
 ```
 
-A diferencia del modelo anterior, este histograma flaquea más visulamente ya que apenas hay valores entre -0.3 y -0.2 que puedan sostener la hipótesis de normalidad. Al realizar el test de *Shapiro-Wilk* se confirma que la hippótesis de normalidad no se puede afirmar para este modelo ya que el *pvalor* del test es inferior al nivel de significación 0.05.
+A diferencia del modelo anterior, este histograma flaquea más visulamente ya que apenas hay valores entre -0.3 y -0.2 que puedan sostener la hipótesis de normalidad. Al realizar el test de *Shapiro-Wilk* se confirma que la hipótesis de normalidad no se puede afirmar para este modelo ya que el *pvalor* del test es inferior al nivel de significación 0.05.
 
 ```{r}
 #hist(resi2,breaks=20, freq=FALSE)
@@ -707,11 +707,11 @@ shapiro.test(resi2)
 
 ### Independencia de residuos
 
-...
+La independencia de los residuos se considera la hiótesis más importante o crítica a la hora de validar el modelo. Para este caso, se usarán como herramientas el ACF y PACF de los residuos y el test de Ljung-Box que permite prueba la hipótesis nula de que las autocorrelaciones de los residuos hasta un desfase *k* son conjuntamente iguales a cero; en otras palabras, independientes.
 
 #### Modelo 1
 
-En cuanto a los retrasos estacionales, el retraso número 60 sobresale de los límites de confianza, sin embargo al tratarse de un restraso considerablemente lejos del origen puede considerarse como fruto del azar y no tenerse en cuenta. Esta suposición se confirma con el el test estadistico de Ljung-Box. Con respecto a la componente regular de los residuos, se puede afirmar que presentan una estructura similar a un *White Noise*, ya que no presentan significación alguna, ni cerca ni lejos del origen.
+En cuanto a los retrasos estacionales, el retraso número 60 sobresale de los límites de confianza, sin embargo al tratarse de un restraso considerablemente lejos del origen puede considerarse como fruto del azar y no tenerse en cuenta. Esta suposición se confirma con el el test estadistico de Ljung-Box, que muestra que el p-valor de la hipótesis en ese desafes está por encima del nivel de significación. Con respecto a la componente regular de los residuos, se puede afirmar que presentan una estructura similar a un *White Noise*, ya que no presentan significación alguna, ni cerca ni lejos del origen (algunas observaciones rozan o sobrsalen ligeramente, pero Ljung-Box confirma que pueden considerarse fruto del azar).
 
 ```{r}
 resi1 <- resid(m1)
@@ -728,10 +728,17 @@ f21
 
 #### Modelo 2
 
+EN el segundo modelo, destaca el restraso número 23 que sobresale de forma notable en ambos gráficos. También se pueden destacar las observaciones 16, 46 y 72 que rozan incluso sobrepasan las bandas. Dejando esto de lado, tanto ACF y PACF se asemejan considerablemente bien a los propios de un *White Noise*.
+
+Para 
 ```{r}
 f22 = ts_cor(resi2, lag.max = 72)
+f22
+```
+Para comprobar los desfases se utilizará nuevamente el test de Ljung-Box. El test muestra que la observación 23 (24 en el gráfico, pues se empieza desde la muestra 1) posee un p-valor superior al nivel de signifcación. Lo mismo sucede con las demás a excepción de la número 72, que se encuentra por debajo y no puede ser pasada por alto. A pesar de ser una observación lejana, este hecho podría dar indicios de que la hipótesis de independencia no se cumple tan bien como en el primer modelo, en el que para todos los residuos no puede ser rechazada la hipótesis de independencia.
+```{r}
 f23 = tsdiag(m2,gof.lag=72)
-f22; f23
+f23
 ```
 
 ### Propiedad de causalidad y/o estacionalidad
