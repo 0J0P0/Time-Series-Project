@@ -747,7 +747,7 @@ A fin de comprobar la causalidad de un modelo se ha de comprobar que los pesos $
 
 $$\phi(B) = \frac{\theta_q(B)}{\phi_p(B)}$$
 
-convergan, de modo que se pueda expresar como un $\mbox{MA}(\infty)$. Lo cuál será de gran utilidad a la hora del cálculo de la varianza de las predicciones puntuales realizadas en breve.
+converjan, de modo que se pueda expresar como un $\mbox{MA}(\infty)$. Lo cuál será de gran utilidad a la hora del cálculo de la varianza de las predicciones puntuales realizadas en breve.
 
 Para asegurar la invertibilidad de un modelo, se ha de comprobar, de manera análoga, que los pesos $\pi_i$ de
 
@@ -780,6 +780,7 @@ Se comprueba visualmente que, en este caso, la inversa de las raices de los dos 
 
 #### Modelo 2
 
+Nuevamente comprobamos que todas las raíces, tanto del polinomio de la parte AR como las del polinomio de la parte MA son superiores a 1. Por tanto, podemos afirmar que el modelo es respectivamente causal y invertible
 ```{r}
 Mod(polyroot(c(1,-m2$model$phi)))
 ```
@@ -787,7 +788,7 @@ Mod(polyroot(c(1,-m2$model$phi)))
 ```{r}
 Mod(polyroot(c(1,m2$model$theta)))
 ```
-
+Para visualizar este resultado, se usa la inversa de las raíces y se comprueba que todas se encuentran dentro del círculo unidad.
 ```{r}
 f25 = ggplotly(autoplot(m2) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
@@ -798,6 +799,8 @@ f25
 ```
 
 ### Estabilidad
+
+Para poder comprobar si los modelos son estables tenemos que recortar las últimas muestras de la serie (en este caso las 12 últimas) y comprobar si, al ajustar cada modelo con la serie recortada se mantienen unos coeficientes muy similares a los de los modelos previos.
 
 ```{r}
 last=c(2017,12); train=window(ser, end=last)
@@ -813,16 +816,17 @@ m1_train <- arima(bctrain, order=c(2,1,1),
 m1_train
 m1
 ```
+Como se puede advertir, para el Modelo 1, se mantienen los signos de los coeficientes y los errores y, además, las magnitudes de estos son muy similares, siendo las variaciones más significativas de apenas una centésima.
 
 ```{r}
 cat("\nT-ratios:",round(m1_train$coef/sqrt(diag(m1_train$var.coef)),2))
 cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
 ```
-
-...
+Para corroborar finalmente al estabilidad del modelo, hay que fijarse en que la significación de los parámetros apenas ha variado.
 
 #### Modelo 2
 
+Respecto al segundo modelo, a pesar que los signos no cambian, las magnitudes de los coeficientes varian de mucho más considerable que para el primer modelo.
 ```{r}
 m2_train <- arima(bctrain, order=c(2,1,0),
                   seasonal=list(order=c(2,1,2), period=12))
@@ -834,6 +838,7 @@ m2
 cat("\nT-ratios:",round(m2_train$coef/sqrt(diag(m2_train$var.coef)),2))
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
+Lo mismo sucede con las significaciones, que también presentan variaciones más drásticas a pesar de no cambiar el signo. Esto indica que el Modelo 1 es más estable que el Modelo 2.
 
 ## Predicciones
 
