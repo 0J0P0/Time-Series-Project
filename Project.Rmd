@@ -547,7 +547,7 @@ scatter.smooth(sqrt(abs(resi1)), lpars = list(col=2))
 
 No obstante, la varianza de los residuos no se puede declarar constante, dado que en el desenlace de las muestras se observa una varianza creciente en comparación con los residuos en el inicio de la serie. Comprobamos este hecho mediante un ajuste local suave de le la variabilidad, en donde la linea de ajuste muestra una leve forma sinusoidal a lo largo de los residuos que tiene pendiente positiva hacia el final y con una tendencia general ligeramente lineal con pendiente positiva. Además, los intervalos de confianza de mayor amplitud se encuentran al inicio y hacia el final de las observaciones. No obstante, como ya se ha explicado, la tendencia observada es muy leve y no debería supone un gran problema.
 
-Entonces, la condición de varianza constante para el Modelo 1 no es definitiva, como consecuencia principalmente de la presencia de outliers. Después de la aplicación del tatamiento de atípicos se espera una mejora considerable.
+Entonces, la condición de varianza constante para el modelo 1 no es definitiva, como consecuencia principalmente de la presencia de outliers. Después de la aplicación del tatamiento de atípicos se espera una mejora considerable.
 
 #### Modelo 2
 
@@ -593,7 +593,7 @@ f15 = subplot(p1, p2, nrows=2, shareX = T) %>%
 f15
 ```
 
-Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del Modelo 1.
+Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del modelo 1.
 
 Así pues, la hipótesis de homocedasticidad tampoco se puede establecer como definitva en este caso. Puesto a que ambos modelos tienen condiciones similares respecto a la varianza pero el segundo modelo cuenta con más atípicos, se considera que el primer modelo valida mejor que el segundo la hipótesis de varianza constante.
 
@@ -620,8 +620,8 @@ f16
 Se aprecia visualmente cierta simetría en el histograma de los residuos, que parecen seguir de forma aceptable una distribución normal. Tras realizar el test de *Shapiro-Wilk* se observa que el *pvalor* del test es superior al grado de significación, por lo que se concluye como correcta la decisión de asumir la normalidad de los residuos.
 
 ```{r}
-#hist(resi1,breaks=20, freq=FALSE)
-#d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
+hist(resi1,breaks=20, freq=FALSE)
+d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 
 f17 = plot_ly() %>%
   add_histogram(x=~resi1,
@@ -669,11 +669,11 @@ f18 = ggplot(data=NULL, aes(sample=resi2)) +
 f18
 ```
 
-A diferencia del modelo anterior, este histograma flaquea más visulamente ya que apenas hay valores entre -0.3 y -0.2 que puedan sostener la hipótesis de normalidad. Al realizar el test de *Shapiro-Wilk* se confirma que la hipótesis de normalidad no se puede afirmar para este modelo ya que el *pvalor* del test es inferior al nivel de significación 0.05.
+A diferencia del modelo anterior, este histograma flaquea más visulamente ya que apenas hay valores entre $-0.3$ y $-0.2$ que puedan sostener la hipótesis de normalidad. Al realizar el test de *Shapiro-Wilk* se confirma que la hipótesis de normalidad no se puede afirmar para este modelo ya que el *pvalor* del test es inferior al nivel de significación $0.05$.
 
 ```{r}
-#hist(resi2,breaks=20, freq=FALSE)
-#d <- curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
+hist(resi2,breaks=20, freq=FALSE)
+d <- curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
 
 f19 = plot_ly() %>%
   add_histogram(x=~resi2,
@@ -694,7 +694,7 @@ f19 = plot_ly() %>%
                        showline = FALSE,
                        showticklabels = FALSE,
                        showgrid = FALSE),
-         title='<b> Histogram of model 1 residuals <b>',
+         title='<b> Histogram of model 2 residuals <b>',
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
@@ -707,7 +707,7 @@ shapiro.test(resi2)
 
 ### Independencia de residuos
 
-La independencia de los residuos se considera la hiótesis más importante o crítica a la hora de validar el modelo. Para este caso, se usarán como herramientas el ACF y PACF de los residuos y el test de Ljung-Box que permite prueba la hipótesis nula de que las autocorrelaciones de los residuos hasta un desfase *k* son conjuntamente iguales a cero; en otras palabras, independientes.
+La independencia de los residuos se considera la hipótesis más importante o crítica a la hora de validar el modelo. Para este caso, se usarán como herramientas el ACF y PACF de los residuos y el test de Ljung-Box que permite prueba la hipótesis nula de que las autocorrelaciones de los residuos hasta un desfase *k* son conjuntamente iguales a cero; en otras palabras, independientes.
 
 #### Modelo 1
 
@@ -800,7 +800,9 @@ f25
 
 ### Estabilidad
 
-Para poder comprobar si los modelos son estables tenemos que recortar las últimas muestras de la serie (en este caso las 12 últimas) y comprobar si, al ajustar cada modelo con la serie recortada se mantienen unos coeficientes muy similares a los de los modelos previos.
+Para poder comprobar si los modelos son estables se debe verificar que el modelo propuesto para todas las observaciones de la serie temporal es similar, en cuanto a unas condiciones cualitativas, al modelo de *training*, conformado por la serie temporal sin las 12 últimas muestras. 
+
+Por lo que se ha de comprobar si, al ajustar cada modelo con la serie recortada se mantienen unos coeficientes muy similares con respecto a la magnitud, al signo y a su significación.
 
 ```{r}
 last=c(2017,12); train=window(ser, end=last)
@@ -816,7 +818,7 @@ m1_train <- arima(bctrain, order=c(2,1,1),
 m1_train
 m1
 ```
-Como se puede advertir, para el Modelo 1, se mantienen los signos de los coeficientes y los errores y, además, las magnitudes de estos son muy similares, siendo las variaciones más significativas de apenas una centésima.
+Como se puede advertir, para el modelo 1, se mantienen los signos de los coeficientes y los errores y, además, las magnitudes de estos son muy similares, siendo las variaciones más significativas de apenas una centésima.
 
 ```{r}
 cat("\nT-ratios:",round(m1_train$coef/sqrt(diag(m1_train$var.coef)),2))
@@ -826,7 +828,8 @@ Para corroborar finalmente al estabilidad del modelo, hay que fijarse en que la 
 
 #### Modelo 2
 
-Respecto al segundo modelo, a pesar que los signos no cambian, las magnitudes de los coeficientes varian de mucho más considerable que para el primer modelo.
+Respecto al segundo modelo, a pesar que los signos no cambian, las magnitudes de los coeficientes varian de mucho más considerablemente que para el primer modelo.
+
 ```{r}
 m2_train <- arima(bctrain, order=c(2,1,0),
                   seasonal=list(order=c(2,1,2), period=12))
@@ -838,13 +841,22 @@ m2
 cat("\nT-ratios:",round(m2_train$coef/sqrt(diag(m2_train$var.coef)),2))
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
-Lo mismo sucede con las significaciones, que también presentan variaciones más drásticas a pesar de no cambiar el signo. Esto indica que el Modelo 1 es más estable que el Modelo 2.
+Lo mismo sucede con las significaciones, que también presentan variaciones más drásticas a pesar de no cambiar el signo. Esto indica que el modelo 1 es más estable que el modelo 2.
+
 
 ## Predicciones
 
+Como el propósito del estudio explica, el objetivo es poder realizar predicciones de futuros valores de la serie temporal, conocida su última observación. Para lo cual, ene este caso se realizarán las predicciones puntuales de las últimas 12 observaciones separadas previamente, para comprobar el ajuste y analizar los intervalos de confianza. 
+
+Se inicia obteniendo las predicciones mediante la función `predict`. Tengase en cuenta que al haber realizado una transformación *Box-Cox* al incio de la identificación, será necesario deshacer estar predicciones a las 12 obserevaciones predecidas, al igual que a los límites del intervalo de confianza.
+
+Los cuales son computados mediante:
+
+$$IC(X_{t+h})_{1-\alpha} = \tilde{X}_{t+h} \pm Z_{1-\alpha/2}\sqrt{\mbox{Var}(\tilde{X}_{t+h})} \ \ , \ h = \lbrace 1, ..., 12\rbrace$$
+
+
 #### Modelo 1
 
-...
 
 ```{r}
 pre1 = predict(m1_train, n.ahead=12)
@@ -885,6 +897,11 @@ f26 = plot_ly(x=~time(ser), y=~ser,
          )
 f26
 ```
+
+Tras la predicción del modelo de *training* sobre las 12 observaciones de validación se observa que las predicciones de las muestras se alienean con las muestras observadas. Si bien en ocasiones puntuales difieren, los intervalos de confianza parecen ser considerablemnete reducidos. 
+
+Se notá el incremento de la amplitud entre los límites de confianza como es de esperar debido al incremento de la incerteza para predicciones puntuales más alejadas de la última observación.
+
 
 #### Modelo 2
 
@@ -929,7 +946,13 @@ f27 = plot_ly(x=~time(ser), y=~ser,
 f27
 ```
 
+
 ## Selección
+
+LLegados a este punto del análisis, se tiene que escoger un único modelo de entre los dos propuestos para proceder a afinarlo con el tratamiento de efectos de calendario y seguidamente el tratamiento de outliers. 
+
+Para este proceso de selección nos apoyaremos en distintas medidas, desde adecuación hasta predicción de los datos. Incluyendo también una discusión en terminos de las hipótesis verificadas en el apartado de validación. 
+
 
 ### Medidas de capacidad de predicción
 
