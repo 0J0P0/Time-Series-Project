@@ -699,6 +699,8 @@ f19 = plot_ly() %>%
          yaxis=list(title='Density')
          )
 f19
+
+
 ```
 
 ```{r}
@@ -707,7 +709,7 @@ shapiro.test(resi2)
 
 ### Independencia de residuos
 
-La independencia de los residuos se considera la hipótesis más importante o crítica a la hora de validar el modelo. Para este caso, se usarán como herramientas el ACF y PACF de los residuos y el test de Ljung-Box que permite pruobar la hipótesis nula de que las autocorrelaciones de los residuos hasta un desfase *k* son conjuntamente iguales a cero; en otras palabras, independientes.
+La independencia de los residuos se considera la hipótesis más importante o crítica a la hora de validar el modelo. Para este caso, se usarán como herramientas el ACF y PACF de los residuos y el test de Ljung-Box que permite prueba la hipótesis nula de que las autocorrelaciones de los residuos hasta un desfase *k* son conjuntamente iguales a cero; en otras palabras, independientes.
 
 #### Modelo 1
 
@@ -728,20 +730,23 @@ f21
 
 #### Modelo 2
 
-En el segundo modelo, destaca el restraso número 23 que sobresale de forma notable en ambos gráficos. También se pueden destacar las observaciones 16, 46 y 72 que rozan incluso sobrepasan las bandas. Dejando esto de lado, tanto ACF y PACF se asemejan considerablemente bien a los propios de un *White Noise*.
+EN el segundo modelo, destaca el restraso número 23 que sobresale de forma notable en ambos gráficos. También se pueden destacar las observaciones 16, 46 y 72 que rozan incluso sobrepasan las bandas. Dejando esto de lado, tanto ACF y PACF se asemejan considerablemente bien a los propios de un *White Noise*.
 
-Para 
+Para
+
 ```{r}
 f22 = ts_cor(resi2, lag.max = 72)
 f22
 ```
+
 Para comprobar los desfases se utilizará nuevamente el test de Ljung-Box. El test muestra que la observación 23 (24 en el gráfico, pues se empieza desde la muestra 1) posee un p-valor superior al nivel de signifcación. Lo mismo sucede con las demás a excepción de la número 72, que se encuentra por debajo y no puede ser pasada por alto. A pesar de ser una observación lejana, este hecho podría dar indicios de que la hipótesis de independencia no se cumple tan bien como en el primer modelo, en el que para todos los residuos no puede ser rechazada la hipótesis de independencia.
+
 ```{r}
 f23 = tsdiag(m2,gof.lag=72)
 f23
 ```
 
-### Propiedad de causalidad y/o estacionalidad
+## Propiedad de causalidad y/o estacionalidad
 
 A fin de comprobar la causalidad de un modelo se ha de comprobar que los pesos $\psi_i$ de
 
@@ -753,7 +758,7 @@ Para asegurar la invertibilidad de un modelo, se ha de comprobar, de manera aná
 
 $$\pi(B) = \frac{\phi_p(B)}{\theta_q(B)}$$ tengan convergencia, de modo que se obtenga una expresión $\mbox{AR}(\infty)$. Bajo esta propiedad y con el uso de observaciones pasadas será posible el cálculo de las predicciones puntuales en el apartado de predicciones.
 
-#### Modelo 1
+### Modelo 1
 
 Al ver que todas las raices del polinomio de grado $50$ son mayores que la unidad, podemos confirmar que el Modelo 1 es causal.
 
@@ -778,9 +783,10 @@ f24
 
 Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el Modelo 1 es tanto causal como invertible.
 
-#### Modelo 2
+### Modelo 2
 
 Nuevamente comprobamos que todas las raíces, tanto del polinomio de la parte AR como las del polinomio de la parte MA son superiores a 1. Por tanto, podemos afirmar que el modelo es respectivamente causal y invertible
+
 ```{r}
 Mod(polyroot(c(1,-m2$model$phi)))
 ```
@@ -788,7 +794,9 @@ Mod(polyroot(c(1,-m2$model$phi)))
 ```{r}
 Mod(polyroot(c(1,m2$model$theta)))
 ```
+
 Para visualizar este resultado, se usa la inversa de las raíces y se comprueba que todas se encuentran dentro del círculo unidad.
+
 ```{r}
 f25 = ggplotly(autoplot(m2) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
@@ -798,17 +806,17 @@ f25 = ggplotly(autoplot(m2) +
 f25
 ```
 
-### Estabilidad
+## Estabilidad
 
-Para poder determinar si los modelos son estables se debe verificar que el modelo propuesto para todas las observaciones de la serie temporal es similar, en cuanto a unas condiciones cualitativas, al modelo de *training*, conformado por la serie temporal sin las 12 últimas muestras. 
+Para poder comprobar si los modelos son estables se debe verificar que el modelo propuesto para todas las observaciones de la serie temporal es similar, en cuanto a unas condiciones cualitativas, al modelo de *training*, conformado por la serie temporal sin las 12 últimas muestras.
 
-Por lo que se ha de comprobar si, al ajustar cada modelo con la serie recortada, se mantienen unos coeficientes muy similares con respecto a la magnitud, al signo y a su significación.
+Por lo que se ha de comprobar si, al ajustar cada modelo con la serie recortada se mantienen unos coeficientes muy similares con respecto a la magnitud, al signo y a su significación.
 
 ```{r}
 last=c(2017,12); train=window(ser, end=last)
 ```
 
-#### Modelo 1
+### Modelo 1
 
 ```{r}
 bctrain = (train^lambda-1)/lambda
@@ -818,15 +826,17 @@ m1_train <- arima(bctrain, order=c(2,1,1),
 m1_train
 m1
 ```
+
 Como se puede advertir, para el modelo 1, se mantienen los signos de los coeficientes y los errores y, además, las magnitudes de estos son muy similares, siendo las variaciones más significativas de apenas una centésima.
 
 ```{r}
 cat("\nT-ratios:",round(m1_train$coef/sqrt(diag(m1_train$var.coef)),2))
 cat("\nT-ratios:",round(m1$coef/sqrt(diag(m1$var.coef)),2))
 ```
+
 Para corroborar finalmente al estabilidad del modelo, hay que fijarse en que la significación de los parámetros apenas ha variado.
 
-#### Modelo 2
+### Modelo 2
 
 Respecto al segundo modelo, a pesar que los signos no cambian, las magnitudes de los coeficientes varian de mucho más considerablemente que para el primer modelo.
 
@@ -841,22 +851,20 @@ m2
 cat("\nT-ratios:",round(m2_train$coef/sqrt(diag(m2_train$var.coef)),2))
 cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 ```
-Lo mismo sucede con las significaciones, que también presentan variaciones más drásticas a pesar de no cambiar el signo. Esto indica que el modelo 1 es más estable que el modelo 2.
 
+Lo mismo sucede con las significaciones, que también presentan variaciones más drásticas a pesar de no cambiar el signo. Esto indica que el modelo 1 es más estable que el modelo 2.
 
 ## Predicciones
 
-Como el propósito del estudio explica, el objetivo es poder realizar predicciones de futuros valores de la serie temporal. Para lo cual, en este caso, se realizarán las predicciones puntuales de las últimas 12 observaciones separadas previamente, para comprobar el ajuste y analizar los intervalos de confianza. 
+Como el propósito del estudio explica, el objetivo es poder realizar predicciones de futuros valores de la serie temporal, conocida su última observación. Para lo cual, ene este caso se realizarán las predicciones puntuales de las últimas 12 observaciones separadas previamente, para comprobar el ajuste y analizar los intervalos de confianza.
 
-Se inicia obteniendo las predicciones mediante la función `predict`. Tengase en cuenta que al haber realizado una transformación *Box-Cox* al incio de la identificación, será necesario deshacer estar predicciones a las 12 observaciones predecidas, al igual que a los límites del intervalo de confianza.
+Se inicia obteniendo las predicciones mediante la función `predict`. Tengase en cuenta que al haber realizado una transformación *Box-Cox* al incio de la identificación, será necesario deshacer estar predicciones a las 12 obserevaciones predecidas, al igual que a los límites del intervalo de confianza.
 
 Los cuales son computados mediante:
 
 $$IC(X_{t+h})_{1-\alpha} = \tilde{X}_{t+h} \pm Z_{1-\alpha/2}\sqrt{\mbox{Var}(\tilde{X}_{t+h})} \ \ , \ h = \lbrace 1, ..., 12\rbrace$$
 
-
 #### Modelo 1
-
 
 ```{r}
 pre1 = predict(m1_train, n.ahead=12)
@@ -898,10 +906,9 @@ f26 = plot_ly(x=~time(ser), y=~ser,
 f26
 ```
 
-Tras la predicción del modelo de *training* sobre las 12 observaciones de validación se observa que las predicciones de las muestras se alinean con las muestras observadas de manera correcta. Si bien en ocasiones difieren levemente, los intervalos de confianza parecen ser considerablemnete reducidos y los valores reales no sobrepasan estos intervalos. 
+Tras la predicción del modelo de *training* sobre las 12 observaciones de validación se observa que las predicciones de las muestras se alienean con las muestras observadas. Si bien en ocasiones puntuales difieren, los intervalos de confianza parecen ser considerablemnete reducidos.
 
-Se nota el incremento de la amplitud entre los límites de confianza, como es de esperar, debido al incremento de la incerteza para predicciones puntuales más alejadas de la última observación.
-
+Se notá el incremento de la amplitud entre los límites de confianza como es de esperar debido al incremento de la incerteza para predicciones puntuales más alejadas de la última observación.
 
 #### Modelo 2
 
@@ -946,13 +953,11 @@ f27 = plot_ly(x=~time(ser), y=~ser,
 f27
 ```
 
-
 ## Selección
 
-LLegados a este punto del análisis, se tiene que escoger un único modelo de entre los dos propuestos para proceder a afinarlo con el tratamiento de efectos de calendario y seguidamente el tratamiento de outliers. 
+LLegados a este punto del análisis, se tiene que escoger un único modelo de entre los dos propuestos para proceder a afinarlo con el tratamiento de efectos de calendario y seguidamente el tratamiento de outliers.
 
-Para este proceso de selección nos apoyaremos en distintas medidas, desde adecuación hasta predicción de los datos. Incluyendo también una discusión en terminos de las hipótesis verificadas en el apartado de validación. 
-
+Para este proceso de selección nos apoyaremos en distintas medidas, desde adecuación hasta predicción de los datos. Incluyendo también una discusión en terminos de las hipótesis verificadas en el apartado de validación.
 
 ### Medidas de capacidad de predicción
 
@@ -960,6 +965,8 @@ Para este proceso de selección nos apoyaremos en distintas medidas, desde adecu
 start=c(2017,12); last=c(2018,12);
 obs = window(ser, start = start, end = last)
 ```
+
+Se ve clara la diferencia entre los valores para los errores del modelo 1 y el modelo 2. La calidad de predicción del modelo 1 es superior, ya que los valores de los errores para este modelo son menores.
 
 #### Modelo 1
 
@@ -990,6 +997,8 @@ cat("Mean length of IC for model 1: ",mean(tu1-tl1))
 cat("Mean length of IC for model 2: ",mean(tu2-tl2))
 ```
 
+En cuanto a la media de los intervalos, el modelo 2 presenta una distancia entre los dos límites del intervalo más pequeña,
+
 MEJORES INTERVALOS EN M2, PERO LA varianza NO ES CONSTANTE XD
 
 ### Medidas de adecuación a los datos
@@ -1014,7 +1023,7 @@ source("Practicas/calendarEffects.r")
 ```{r}
 start = c(1990,1,length(ser))
 vEa = Weaster(start)
-VEa
+vEa
 ```
 
 ...
