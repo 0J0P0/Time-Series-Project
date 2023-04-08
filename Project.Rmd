@@ -2,7 +2,9 @@
 title: "Project"
 author: "Juan Pablo Zaldivar && Enric Millan"
 date: "2023-03-14"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -28,17 +30,8 @@ library(TSstudio)
 
 # Introducción
 
-El propósito al estudio de este proyecto consiste en obtener previsiones a partir de la última observación registrada de una serie temporal seleccionada. No sin antes haber realizado un análisis e informe exhaustivos acerca de la observaciones de la serie y sus propiedades.
-
-Tal estudio presentado a continuación se compone de una succesión de apartados en donde se empleará la metodología Box-Jenkins mediante modelos ARIMA que representen la serie temporal, así como también la incorporación del tratamiento de observaciones atípicas.
-
 ## Descripción Serie Temporal
 
-La serie temporal de elección para el proyecto contiene el total de exportaciones (en miles de millones de euros) en España. (CITA).
-
-*(descripcion serie, metodo de recogida de datos, variables)*
-
-Con un total de 240 observaciones de frecuencia mensual, recorre un periodo de 20 años. Desde el primer mes de 1999 hasta diciembre de 2018. Los valores de las observaciones están registradas en miles de millones de euros, por lo tanto, por simplicidad a la hora de graficar a partir de ahora se trabajara con decenas en términos de miles de de millones.
 
 ```{r}
 ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
@@ -60,13 +53,6 @@ f1 = plot_ly(x=~time(ser), y=~ser,
 f1;
 ```
 
-Observando la serie temporal detectamos una tendencia creciente a lo largo del tiempo, que mantiene una pendiente casi constante, es decir, no se podría decir que hay indicios de un aumento repentino del total de exportaciones en españa durante las últimas dos décadas.
-
-Por otro lado, a simple vista se detecta una caída en lo que corresponde a los años 2008-2009, muy seguramente debido a la crísis económica. Este hecho probablemente conlleve a un valor atípico en la serie que se tendrá que confirmar en el desarrollo del análsis con el tratamiento de atípicos.
-
-Otro hecho a destacar sobre la serie son un par de observaciones con magnitudes que sobresalen notablemente en el mes de febrero (finales de enero e inicios de febrero) de 2011 y 2017 respectivamente. Una posible hipótesis para la segunda observación (febrero 2017) supone que haya sido causa de un incremento de las exportaciones debido a los terremotos en Filipinas como muestra de apoyo y soliralidad hacía las personas implicadas. Aunque por el valor de la muestra, parece ser causa de un motivo distinto. Para el primer caso (enero/febrero 2011) los bienes de equipo y el sector automóvil han sido los principales impulsores del aumento en los 10 primeros meses del año, por lo que es probable que este pico en febrero esté relacionado. Los datos oficiales indican que en el segundo caso las principales contribuciones al crecimiento de las exportaciones provinieron del sector de productos energéticos, alimentación, bebidas y tabaco, sector automóvil y manufacturas de consumo.
-
-Se ha de aclarar que estas explicaciones se realizan en base a investigaciones propias para interntar tener un un entendimiento de la causa de tales observaciones. El caso ideal sería contar con un experto en el ámbito de la exportación nacional e incluso internacional para otorgarnos una visión clara sobre estos resultados, ya que es muy probable que hubiese una razón de peso para estos aumentos.
 
 ```{r}
 ds <- decompose(ser)
@@ -105,25 +91,10 @@ f2 = subplot(p1, p2, p3, p4, nrows=4) %>%
 f2;
 ```
 
-Mediante la descomposición de la serie, confirmamos la tendencia conforme a un creciemiento lineal no excesivamente pronunciado, aunque deben tenerse en cuenta las magnitudes de las observaciones.
-
-En azul marino, la componente estacional muestra un pico en el número de exportaciones en el primer cuatrimestre del año, mientras que sufre de una disminución considerable durante la temporada de verano, con el descenso mayor en el mes de agosto aproximadamente. Este último hecho coincide con el periodo de mayor descanso laboral en España.
 
 ## Motivación
 
-...
-
 ## Descripción sintética
-
-Como ya se ha mencionado en este proyecto se usará la metodología Box-Jenkins.
-
-De manera incial se comenzará con la identificación de la serie. La cual consiste en la evaluación de la serie para aplicarle un conjunto de trasnformaciones de modo que se obtenga una serie estacionaria, sobre la cual poder prpoponer modelos adecuados. Dichas transformaciones se aplican para obtener una varianza cosntante de la serie, eliminar un posible patrón estacional de los datos y conseguir una media constante. De tal forma que sea posible proponer modelos, premiando su baja complejidad, para proceder a la estimación de sus parámetros y de la media de la serie.
-
-A continuación, se han de validar los modelos propuestos. Llegados a este punto, ya se habrán seleccionado dos de los modelos propuestos bajo criterios que se detallarán en el informe. Para cada uno de ellos se realizarán las revisiones necesarias para validar la varianza consante de los residuos del modelo, siendo la principal herramienta el gráfico de los propios residuos. Se comprobará que los residuos se comporten bajo la hipótesis de normalidad, con herramientas gráficas como el *Normal Q-Q Plot* o el histograma de los residuos. Por último se revisará que los residuos cumplan con la condición de independencia, considerada la de mayor relevancia al tratarse de una serie temporal, mediante el ACF y PACF de los mismos residuos. Todas estas herramientas y métodos se explican con detalle a lo largo del informe.
-
-Una vez consolidados los modelos propuestos, se estudiarán las propiedades de estabilidad, invertibilidad y causalidad de cada uno. De modo que justo después se realizarán las predicciones puntuales y las medidas de capacidad de predicción de cada modelo.
-
-Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cual se busca definir una serie teórica sin estos atípicos para reducir la variabilidad del modelo. Esto tiene el fin de poder mejorar las predicciones en cada uno de los modelos para poder así discutir sobre un mejor modelo en términos de las cualidades y medidas realizadas a lo largo del estudio.
 
 # Resultados e interpretación
 
@@ -138,10 +109,6 @@ Se buscará afinar el resultado al aplicar un tratamiento de atípicos, en el cu
 ...
 
 #### Varianza constante
-
-Se pretende identificar algun tipo de tendencia en la serie que haga que la varianza no sea constante a lo largo de esto. Para ello se grafican mediciones de la media y la varianza de grupos consecutivos de entre 8-12 observaciones a modo de poder visualizar el comportamiento de la varianza de la serie.
-
-Para satisfacer la condición de varianza constante, la dispersión de los puntos debe ser similar a lo largo de todo el eje horizonal.
 
 ```{r}
 m <- apply(matrix(ser, nrow=12), 2, mean)
@@ -158,11 +125,6 @@ f3 = plot_ly(x=~m, y=~v,
 f3;
 ```
 
-Vease que hay un aumento de la varianza entre los valores inciales y finales de la serie, aunque como se ha comprobado, una trasnformación de tipo logaritmica no es suficiente para el caso de esta serie temporal. Si bien no se podría llegar a razonar y aceptar que todo el conjunto de puntos mantienen una dispersión similar, una transformación *Box-Cox* podría ser útil para este caso.
-
-Para evitar la posible influencia de valores atípicos, también se realiza un boxplot para cada año de la serie, de modo que, idealmente, la altura del IQR de cada caja tiene que se aproximadamente la misma.
-
-Para el caso de esta serie temporal observamos que no hay una gran diferencia en la variabilidad de la serie pero si que es notable en ciertos casos, por lo que no se puede validar que haya una varianza constante en la serie original.
 
 ```{r}
 f4 = plot_ly(x=~floor(time(ser)), y=~ser, type='box',
@@ -176,18 +138,12 @@ f4 = plot_ly(x=~floor(time(ser)), y=~ser, type='box',
 f4
 ```
 
-Aunque la trasnformación logaritmica es de fácil interpretación, comprobamos que no mejora la condición de la varianza y no es suficiente, por lo que se ha de proponer un valor de $\lambda$ para la transformación Box-Cox ya mencionada, que tiene la siguiente forma:
-
 $$\frac{X_t^{\lambda}-1}{\lambda}, \ \ \lambda \in [-1,2], \ \lambda \neq 0$$
 
 ```{r}
 lambda = BoxCox.lambda(ser, method = c("guerrero", "loglik"), lower = -1, upper = 2)
 bcser = (ser^lambda-1)/lambda
 ```
-
-La función `BoxCox.lambda()` de la librería **forecast** nos permite seleccionar de forma automática la mejor $\lambda$ posible bajo los criterios que se establezcan. En este caso, usando los métodos "*guerrero*" y "*loglik*" se busca, en primer lugar, una $\lambda$ que minimice el coeficiente de variación para la subserie resultante de la transformación y, en segundo lugar, el valor de $\lambda$ se elige para maximizar el perfíl de la verosimilitud logarítmica de un modelo lineal ajustado a la serie.
-
-Con lo que se obtiene un valor de $\lambda = 0.395$ aproximadamente.
 
 ```{r}
 m <- apply(matrix(bcser, nrow=12), 2, mean)
@@ -231,11 +187,9 @@ f7 = plot_ly(x=~time(bcser), y=~bcser,
 f7
 ```
 
-Tras la transformación, la varianza para los diferentes grupos de observaciones es similar. Además de que la altura de los IQR de los boxplots ya es prácticamente la misma a lo largo del tiempo y en el gráfico de varianza y media vemos que la primera no toma una tendencia en función de la segunda.
 
 #### Patrón estacional
 
-Para buscar un posible patrón estacional de orden $s=12$, se grafícan las subseries correspondientes a cada año de la serie temporal. Además de dos representaciones adicionales, la primera (segundo gráfico) muestra si hay una jerarquía entre los diversos meses pero se ve que no hay ninguno que sobresalga siempre.La segunda (tercer gráfico) muestra los boxplots de las distribuciones de las observaciones por meses.
 
 ```{r}
 f8 = ts_seasonal(bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
@@ -245,11 +199,6 @@ monthplot(bcser)
 f8
 ```
 
-Para cada año se observa una claro patrón estacional en el mes de agosto, donde hay una clara caida de los valores de las observaciones. Esto se confirma observando los boxplots, en los que se aprecia que todos tienen valores similares a excepción agosto, que tiene los valores más bajos, debido a que es el mes clave del periodo vacacional en España, tal y como se había visto en la gráfica inicial de la serie.
-
-Se observa también en el primer gráfico que el tercer mes del año tiene muetsras con valores que aumentan considerablemente en marzo y seguidamente caen ligeramente en el abril o viceversa. Posiblemente este fenómeno esté relacionado con los efectos de calendario, ya que por esos meses se encuentra la festividad de Semana Santa, la cual se distribuye entre ambos meses de manera distinta dependiendo el año. Con lo cual, genera estos aumentos que se detectan en marzo cuando la Semana Santa ocurre en mayor parte en Abril y por otro lado, los aumentos del mes de abril corresponden a los años para los que la Semana Santa tuvo lugar más en el mes de marzo. Más adelante se discutirá el tratamiento de dicho efecto.
-
-Se ha confirmado la presencia de un patrón estacional, por lo que se procede a realizar la diferenciación estacional de orden 12. Esto impica que el valor del parámetro $D$ toma el valor de la unidad.
 
 $$(1-B^{12})X_t$$
 
@@ -280,18 +229,14 @@ f9
 monthplot(d12bcser)
 ```
 
-Tras la transformación se puede observar en el gráfico de arriba que las subseries de los meses presentan una misma media, forman una línea casi perfecta horizontalmente. De la misma forma, ya no es visible una dependencia entre muestras del mismo periodo.
-
 ```{r}
-f11 = ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
-f11
+f10 = ts_seasonal(d12bcser, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f10
 ```
 
-Para corroborar que la transformación sean apropiadas basta con observar la descomposición estacional tras dicha transformación para ver que se ha eliminado todo rastro de un patrón estacional.
 
 #### Media constante
 
-Tras la eliminación del patrón estacional observamos que la serie no presenta signos de una tendencia lineal o algún tipo de tendencia, por lo que podemos considerar ya de entrada la media como constante. Aunque para comprobar se compararán la varianza de la serie con solo la diferenciación estacional y su varianza tras aplicarle una diferenciación regular a esta última.
 
 ```{r}
 var(d12bcser)
@@ -299,7 +244,6 @@ var(diff(d12bcser))
 var(diff(diff(d12bcser)))
 ```
 
-Como la varianza de la serie aumenta tras la segunda diferenciación regular, se identifica que se ha realizado una sobrediferenciación. Esto implica que no es necesaria la aplicación de la segunda trasnformación para asegurar media constante, solo basta con la primera. Obteniendo el parámetro $d=1$.
 
 ```{r}
 d1d12bcser = diff(d12bcser)
@@ -307,12 +251,10 @@ d1d12bcser = diff(d12bcser)
 
 ### Serie estacionaria
 
-Tras el proceso de transformaciones, únicamente se ha requerido una diferenciación estacional y una diferenciación regular para la serie original. Con lo que la serie estacionaria $W_t$ resulta ser:
-
 $$W_t = (1-B)(1-B^{12})\frac{X_t^\lambda-1}{\lambda} \ \ , \ \lambda≃0.395$$
 
 ```{r}
-f12 = plot_ly() %>%
+f11 = plot_ly() %>%
   add_trace(x=~time(d1d12bcser), y=~d1d12bcser,
             type = "scatter",
             fill="tonexty",
@@ -330,7 +272,7 @@ f12 = plot_ly() %>%
   layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')) 
-f12
+f11
 ```
 
 ### Modelos propuestos
@@ -338,8 +280,8 @@ f12
 Para poder proponer modelos deben analizarse los gráficos del ACF y el PACF de la serie tras haberle aplicado las transformaciones.
 
 ```{r}
-f13 = ts_cor(d1d12bcser, lag.max = 72)
-f13
+f12 = ts_cor(d1d12bcser, lag.max = 72)
+f12
 ```
 
 Si bien es cierto que se observa cierta tendencia logarítmica en los retrasos del PACF, se considera que es el más adecuado para considerar los retrasos finitos inicialmente. Siendo el gráfico del ACF el que contiene infinitos retrasos no nulos.
@@ -499,7 +441,7 @@ A modo de validar la condición de homocedasticidad (varianza constante) en los 
 
 Observamos que los residuos del Modelo 1 presentan dos valores por debajo del límite inferior de las bandas de probabilidad, lo cual respecta a $0.833%$ de los valores. A pesar de que no es un porcentaje elevado respecto a lo que consideramos indicativo de un problema, estos posibles valores atípicos del modelo serán comentados a profundidad en el apartado de tratamiento de atípicos si este modelo es escogido como el más adecuado.
 
-En términos de la varianza, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro y sin presencia de los ya mencionados clústeres o grupos de volatilidad ya que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados. *Esto que sugiere que el modelo genera una aproximación a las observaciones aceptable.* NO COMPRENDO
+En términos de la varianza, vemos una dispersión de los residuos alrededor del 0 sin ningún patrón claro y sin presencia de los ya mencionados clústeres o grupos de volatilidad ya que no hay evidencias visuales de fluctuación de la variailidad en periodos de tiempo determinados.
 
 ```{r}
 resi1 <- resid(m1)
@@ -538,9 +480,9 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi1))) +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+f13 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-f14
+f13
 
 scatter.smooth(sqrt(abs(resi1)), lpars = list(col=2))
 ```
@@ -588,9 +530,9 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi2))) +
   ggtitle(" <b> Absolute value of model 2 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-f15 = subplot(p1, p2, nrows=2, shareX = T) %>%
+f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-f15
+f14
 ```
 
 Para el segundo modelo la presencia de outliers ha aumentado, siendo 3 esta vez, el resto de factores, como la tendencia del ajuste local suave y sus intervalos de coanfianza tienen un comportamiento muy similar a los del modelo 1.
@@ -606,7 +548,7 @@ Para analizar si se cumple esta segunda hipótesis se utilizaran herramientas co
 Tal y como se detectó en el ánalisis de la varianza, hay presencia de posibles outliers, que en algunos casos incluso sobrepasan los intervalos de confianza del gráfico de cuartiles. Por otro lado, es razonable decir que la normalidad de los reiduos es bastante evidente, pues las muestras se ajustan adecuadamente a los cuantiles teóricos bajo la distribución de la normalidad y la cantidad de posibles outliers no es lo suficientemente elevada ni su magnitud tan pronunciada como para considerar la presencia de *Heavy-Tails* que indicarían volatilidad.
 
 ```{r}
-f16 = ggplot(data=NULL, aes(sample=resi1)) +
+f15 = ggplot(data=NULL, aes(sample=resi1)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -614,7 +556,7 @@ f16 = ggplot(data=NULL, aes(sample=resi1)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-f16
+f15
 ```
 
 Se aprecia visualmente cierta simetría en el histograma de los residuos, que parecen seguir de forma aceptable una distribución normal. Tras realizar el test de *Shapiro-Wilk* se observa que el *pvalor* del test es superior al grado de significación, por lo que se concluye como correcta la decisión de asumir la normalidad de los residuos.
@@ -623,7 +565,7 @@ Se aprecia visualmente cierta simetría en el histograma de los residuos, que pa
 hist(resi1,breaks=20, freq=FALSE)
 d <- curve(dnorm(x, mean=mean(resi1), sd=sd(resi1)), col=2, add=T)
 
-f17 = plot_ly() %>%
+f16 = plot_ly() %>%
   add_histogram(x=~resi1,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -646,7 +588,7 @@ f17 = plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
-f17
+f16
 ```
 
 ```{r}
@@ -658,7 +600,7 @@ shapiro.test(resi1)
 El segundo modelo presenta una presencia de outliers más alta y acentuada que el primer modelo, hecho que ya se había vislumbrado con el análisis de la varianza. Sin embargo, tal y como sucede con el primer modelo, parece que el ajuste a los cuantiles teóricos es aceptable puesto que los outliers serán tratados posteriormente si el modelo es seleccionado.
 
 ```{r}
-f18 = ggplot(data=NULL, aes(sample=resi2)) +
+f17 = ggplot(data=NULL, aes(sample=resi2)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -666,7 +608,7 @@ f18 = ggplot(data=NULL, aes(sample=resi2)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-f18
+f17
 ```
 
 A diferencia del modelo anterior, este histograma flaquea más visulamente ya que apenas hay valores entre $-0.3$ y $-0.2$ que puedan sostener la hipótesis de normalidad. Al realizar el test de *Shapiro-Wilk* se confirma que la hipótesis de normalidad no se puede afirmar para este modelo ya que el *pvalor* del test es inferior al nivel de significación $0.05$.
@@ -675,7 +617,7 @@ A diferencia del modelo anterior, este histograma flaquea más visulamente ya qu
 hist(resi2,breaks=20, freq=FALSE)
 d <- curve(dnorm(x, mean=mean(resi2), sd=sd(resi2)), col=2, add=T)
 
-f19 = plot_ly() %>%
+f18 = plot_ly() %>%
   add_histogram(x=~resi2,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -698,7 +640,7 @@ f19 = plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
-f19
+f18
 
 
 ```
@@ -717,15 +659,14 @@ En cuanto a los retrasos estacionales, el retraso número 60 sobresale de los l�
 
 ```{r}
 resi1 <- resid(m1)
-f20 = ts_cor(resi1, lag.max = 72)
-f20
+f19 = ts_cor(resi1, lag.max = 72)
+f19
 ```
 
 Además de la interpretación visual del ACF y PACF de los residuos, los pvalores del test de Ljung-Box están por encima en todos los casos del nivel de significación. Por lo que se confirma la hipótesis de independencia de residuos para el Modelo 1.
 
 ```{r}
-f21 = tsdiag(m1,gof.lag=72)
-f21
+tsdiag(m1,gof.lag=72)
 ```
 
 #### Modelo 2
@@ -735,18 +676,17 @@ EN el segundo modelo, destaca el restraso número 23 que sobresale de forma nota
 Para
 
 ```{r}
-f22 = ts_cor(resi2, lag.max = 72)
-f22
+f20 = ts_cor(resi2, lag.max = 72)
+f20
 ```
 
 Para comprobar los desfases se utilizará nuevamente el test de Ljung-Box. El test muestra que la observación 23 (24 en el gráfico, pues se empieza desde la muestra 1) posee un p-valor superior al nivel de signifcación. Lo mismo sucede con las demás a excepción de la número 72, que se encuentra por debajo y no puede ser pasada por alto. A pesar de ser una observación lejana, este hecho podría dar indicios de que la hipótesis de independencia no se cumple tan bien como en el primer modelo, en el que para todos los residuos no puede ser rechazada la hipótesis de independencia.
 
 ```{r}
-f23 = tsdiag(m2,gof.lag=72)
-f23
+tsdiag(m2,gof.lag=72)
 ```
 
-## Propiedad de causalidad y/o estacionalidad
+## Propiedad de causalidad y/o invertibilidad
 
 A fin de comprobar la causalidad de un modelo se ha de comprobar que los pesos $\psi_i$ de
 
@@ -773,12 +713,12 @@ Mod(polyroot(c(1,m1$model$theta)))
 ```
 
 ```{r}
-f24 = ggplotly(autoplot(m1) +
+f21 = ggplotly(autoplot(m1) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model 1 <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
-f24
+f21
 ```
 
 Se comprueba visualmente que, en este caso, la inversa de las raices de los dos polinomios caen dentro del circulo unitario, por lo tanto, el Modelo 1 es tanto causal como invertible.
@@ -798,12 +738,12 @@ Mod(polyroot(c(1,m2$model$theta)))
 Para visualizar este resultado, se usa la inversa de las raíces y se comprueba que todas se encuentran dentro del círculo unidad.
 
 ```{r}
-f25 = ggplotly(autoplot(m2) +
+f22 = ggplotly(autoplot(m2) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model 1 <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
-f25
+f22
 ```
 
 ## Estabilidad
@@ -879,7 +819,7 @@ tu1 = (lambda*(tu1)+1)^(1/lambda)
 ```
 
 ```{r}
-f26 = plot_ly(x=~time(ser), y=~ser,
+f23 = plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
@@ -903,7 +843,7 @@ f26 = plot_ly(x=~time(ser), y=~ser,
          xaxis=list(title='Time', range=c(2016,2019)),
          yaxis=list(title='(Thousand million euros)')
          )
-f26
+f23
 ```
 
 Tras la predicción del modelo de *training* sobre las 12 observaciones de validación se observa que las predicciones de las muestras se alienean con las muestras observadas. Si bien en ocasiones puntuales difieren, los intervalos de confianza parecen ser considerablemnete reducidos.
@@ -926,7 +866,7 @@ tu2 = (lambda*(tu2)+1)^(1/lambda)
 ```
 
 ```{r}
-f27 = plot_ly(x=~time(ser), y=~ser,
+f24 = plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
@@ -950,7 +890,7 @@ f27 = plot_ly(x=~time(ser), y=~ser,
          xaxis=list(title='Time', range=c(2016,2019)),
          yaxis=list(title='(Thousand million euros)')
          )
-f27
+f24
 ```
 
 ## Selección
@@ -1021,7 +961,12 @@ source("Practicas/calendarEffects.r")
 ...
 
 ```{r}
-start = c(1990,1,length(ser))
+length(ser)
+```
+
+
+```{r}
+start = c(1999,1,length(ser))
 vEa = Weaster(start)
 vEa
 ```
@@ -1064,14 +1009,73 @@ m1EC = arima(bcser, order=c(2,1,1),
 m1EC
 ```
 
+
+```{r}
+coef(m1EC)["vEa"]*vEa
+```
+
+
+```{r}
+coef(m1EC)["vTD"]*vTD
+```
+
 ...
+
+```{r}
+bcserEC = bcser - coef(m1EC)["vEa"]*vEa - coef(m1EC)["vTD"]*vTD
+
+(lambda*(cbind(bcser, bcserEC))+1)^(1/lambda)
+```
+
 
 ## Re-identificación modelo
 
 ```{r}
-f13 = ts_cor(d1d12bcser, lag.max = 72)
-f13
+m <- apply(matrix(bcserEC, nrow=12), 2, mean)
+v <- apply(matrix(bcserEC, nrow=12), 2, var)
+
+plot(v~m)
 ```
+
+
+```{r}
+monthplot(bcserEC)
+```
+
+```{r}
+d12bcserEC = diff(bcserEC, 12)
+plot(d12bcserEC)
+```
+
+```{r}
+var(d12bcserEC)
+var(diff(d12bcserEC))
+var(diff(diff(d12bcserEC)))
+```
+
+```{r}
+d1d12bcserEC = diff(d12bcserEC)
+plot(d1d12bcserEC)
+```
+
+
+```{r}
+ts_cor(d1d12bcserEC, lag.max = 72)
+```
+
+```{r}
+arima(d1d12bcserEC,order=c(2,0,0),
+           seasonal=list(order=c(0,0,1),period=12),
+           xreg=data.frame(vEa, vTD))
+```
+
+```{r}
+mEC = arima(bcserEC,order=c(2,1,0),
+           seasonal=list(order=c(0,1,1),period=12),
+           xreg=data.frame(vEa, vTD))
+mEC
+```
+
 
 ## Estimación modelo con efectos de calendario
 
@@ -1140,9 +1144,8 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi))) +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-f14
 
 scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
 ```
@@ -1154,7 +1157,7 @@ scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
 ...
 
 ```{r}
-f16 = ggplot(data=NULL, aes(sample=resi)) +
+ggplot(data=NULL, aes(sample=resi)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -1162,13 +1165,12 @@ f16 = ggplot(data=NULL, aes(sample=resi)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-f16
 ```
 
 ...
 
 ```{r}
-f17 = plot_ly() %>%
+plot_ly() %>%
   add_histogram(x=~resi,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -1191,7 +1193,6 @@ f17 = plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
-f17
 ```
 
 ```{r}
@@ -1206,15 +1207,14 @@ shapiro.test(resi)
 
 ```{r}
 resi <- resid(m)
-f20 = ts_cor(resi, lag.max = 72)
-f20
+ts_cor(resi, lag.max = 72)
 ```
 
 ...
 
 ```{r}
-f21 = tsdiag(m1,gof.lag=72)
-f21
+tsdiag(m1,gof.lag=72)
+
 ```
 
 ...
@@ -1226,8 +1226,7 @@ f21
 ## Re-identificación modelo
 
 ```{r}
-f13 = ts_cor(d1d12bcser, lag.max = 72)
-f13
+ts_cor(d1d12bcser, lag.max = 72)
 ```
 
 ## Estimación modelo con efectos de calendario
@@ -1297,9 +1296,8 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resi))) +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-f14 = subplot(p1, p2, nrows=2, shareX = T) %>%
+subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-f14
 
 scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
 ```
@@ -1311,7 +1309,7 @@ scatter.smooth(sqrt(abs(resi)), lpars = list(col=2))
 ...
 
 ```{r}
-f16 = ggplot(data=NULL, aes(sample=resi)) +
+ggplot(data=NULL, aes(sample=resi)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -1319,13 +1317,12 @@ f16 = ggplot(data=NULL, aes(sample=resi)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-f16
 ```
 
 ...
 
 ```{r}
-f17 = plot_ly() %>%
+plot_ly() %>%
   add_histogram(x=~resi,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -1348,7 +1345,6 @@ f17 = plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
-f17
 ```
 
 ```{r}
@@ -1363,15 +1359,13 @@ shapiro.test(resi)
 
 ```{r}
 resi <- resid(m)
-f20 = ts_cor(resi, lag.max = 72)
-f20
+ts_cor(resi, lag.max = 72)
 ```
 
 ...
 
 ```{r}
-f21 = tsdiag(m1,gof.lag=72)
-f21
+tsdiag(m1,gof.lag=72)
 ```
 
 ...
@@ -1387,9 +1381,10 @@ f21
 .
 
 ```{r}
-# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27)
+# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24)
 # n = length(f)
 # for (i in 1:n) {
 #   orca(f[[i]], paste0("./Figures/f",i,".png"))
+#   cat(i)
 # }
 ```
