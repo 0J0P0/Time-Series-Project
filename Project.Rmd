@@ -1439,50 +1439,86 @@ f1
 ```
 
 
+## Re-identificación modelo
+
 ```{r}
-# plot(bcserEC-bcserEC.lin)
-f1 = plot_ly(x = time(bcserEC), y = (bcserEC-bcserEC.lin),
-             type = "scatter",
-             mode="lines",
-             fill=F,
-             line = list(color = "#2a788e"),
-             fillcolor="rgba(42, 120, 142, 0.5)",
-             name = "serEC"
-             ) %>%
-  layout(title='<b> Total exportations in Spain <b>',
-         xaxis=list(title='Time'),
-         yaxis=list(title='(Thousand million euros)')
-         )  
-f1
+m <- apply(matrix(bcserEC.lin, nrow=12), 2, mean)
+v <- apply(matrix(bcserEC.lin, nrow=12), 2, var)
+
+f25 = plot_ly(x=~m, y=~v,
+        marker = list(size = 7,
+                      color = '#2a788e',
+                      line = list(color = '#414487',width = 1))
+        ) %>%
+  layout(title='<b> Varience~Mean <b>',
+         xaxis=list(title='Mean'),
+         yaxis=list(title='Variance'))
+f25
 ```
 
 
 ```{r}
-var(bcserEC.lin)[1]
-d12bcserEC.lin=diff(bcserEC.lin,12)
+f26 = ts_seasonal(bcserEC.lin, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f26
+```
+
+```{r}
+d12bcserEC.lin = diff(bcserEC.lin, 12)
+```
+
+```{r}
+f27 = plot_ly() %>%
+  add_trace(x=~time(d12bcserEC.lin), y=~d12bcserEC.lin,
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
+  add_trace(x=~time(d12bcserEC.lin), y=~mean(d12bcserEC.lin),
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
+  layout(title='<b> Time Series <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')) 
+f27
+```
+
+
+```{r}
 var(d12bcserEC.lin)[1]
-d1d12bcserEC.lin=diff(d12bcserEC.lin)
-var(d1d12bcserEC.lin)[1]
-d1d1d12bcserEC.lin=diff(d1d12bcserEC.lin)
-var(d1d1d12bcserEC.lin)[1]
+var(diff(d12bcserEC.lin))[1]
+var(diff(diff(d12bcserEC.lin)))[1]
 ```
 
+```{r}
+d1d12bcserEC.lin = diff(d12bcserEC.lin)
+```
 
 ```{r}
-# plot(d1d12bcserEC.lin)
-f1 = plot_ly(x = time(d1d12bcserEC.lin), y = (d1d12bcserEC.lin),
-             type = "scatter",
-             mode="lines",
-             fill="tonexty",
-             line = list(color = "#2a788e"),
-             fillcolor="rgba(42, 120, 142, 0.5)",
-             name = "serEC"
-             ) %>%
-  layout(title='<b> Total exportations in Spain <b>',
+f28 = plot_ly() %>%
+  add_trace(x=~time(d1d12bcserEC.lin), y=~d1d12bcserEC.lin,
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
+  add_trace(x=~time(d1d12bcserEC.lin), y=~mean(d1d12bcserEC.lin),
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
+  layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'),
-         yaxis=list(title='(Thousand million euros)')
-         )  
-f1
+         yaxis=list(title='(Thousand million euros)')) 
+f28
 ```
 
 
@@ -1492,6 +1528,255 @@ var(d1d12bcserEC)[1]
 var(d1d12bcserEC.lin)[1]
 ```
 
+
+```{r}
+f29 = ts_cor(d1d12bcserEC.lin, lag.max = 72)
+f29
+```
+
+```{r}
+arima(d1d12bcserEC.lin,order=c(2,0,0),
+           seasonal=list(order=c(0,0,1),period=12))
+```
+
+
+```{r}
+# arima(d1d12bcserEC.lin,order=c(1,0,1),
+           # seasonal=list(order=c(0,0,1),period=12))
+```
+
+
+```{r}
+mOEC = arima(bcserEC.lin,order=c(2,1,0),
+           seasonal=list(order=c(0,1,1),period=12))
+mOEC
+```
+
+
+## Estimación modelo con efectos de calendario
+
+...
+
+```{r}
+cat("\nT-ratios:",round(mOEC$coef/sqrt(diag(mOEC$var.coef)),2))
+```
+
+## Validación
+
+### Varianza constante de residuos
+
+```{r}
+resiEC.lin <- resid(mOEC)
+resiEC.lin <- window(resiEC.lin, start=c(2000,2))
+```
+
+```{r}
+p1 = plot_ly() %>%
+  add_trace(x=~time(d1d12bcserEC.lin), y=~resiEC.lin,
+            type = "scatter",
+            fill="tonexty",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            mode="lines",
+            name='Residuals of model 1'
+            ) %>%
+  add_lines(x=~time(d1d12bcserEC.lin), y=~-3*sd(resiEC.lin),
+            fill=F,
+            line=list(color='#440154',dash='dot'),
+            name='Lower IC limit'
+            ) %>%
+  add_lines(x=~time(d1d12bcserEC.lin), y=~3*sd(resiEC.lin),
+            fill=F,
+            line=list(color='#440154', dash='dot'),
+            name="Upper IC limit"
+            ) %>%
+  layout(title='<b> Residuals of model 1 <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)'))
+
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcserEC.lin), y=abs(resiEC.lin))) +
+  geom_smooth(fill="#2a788e") + 
+  geom_point(color="#440154", fill='#414487', shape=21) +
+  theme_bw() + 
+  xlab("Time") + ylab("abs(residuals 1)") +
+  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  theme(plot.title = element_text(hjust = 0.5)))
+
+f30 = subplot(p1, p2, nrows=2, shareX = T) %>%
+  layout(title='<b> Constant Variance plots <b>')
+f30
+```
+
+### Hipótesis de normalidad de residuos
+
+```{r}
+f31 = ggplot(data=NULL, aes(sample=resiEC.lin)) +
+  stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
+  stat_qq_line(color='#39568CFF') +
+  stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
+  theme_bw() +
+  xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
+  ggtitle("Normal Q-Q Plot") +
+  theme(plot.title = element_text(hjust = 0.5))
+f31
+```
+
+...
+
+```{r}
+f32 = plot_ly() %>%
+  add_histogram(x=~resiEC.lin,
+        name="Model 1 residuals",
+        marker = list(color = "#22a884",
+                      line = list(color = "#2a788e", width = 2))
+        ) %>%
+  add_trace(x=~d$x, y=~d$y,
+            type = 'scatter',
+            mode = 'none',
+            name = "Density curve",
+            fill = "tozeroy",
+            fillcolor="rgba(168, 216, 234, 0.5)",
+            yaxis = "y2"
+            ) %>% 
+  layout(yaxis2 = list(overlaying = "y", side = "right", title = "",
+                       zeroline = FALSE,
+                       showline = FALSE,
+                       showticklabels = FALSE,
+                       showgrid = FALSE),
+         title='<b> Histogram of model 1 residuals <b>',
+         xaxis=list(title='Residuals'),
+         yaxis=list(title='Density')
+         )
+f32
+```
+
+```{r}
+shapiro.test(resiEC.lin)
+```
+
+### Independencia de residuos
+
+```{r}
+resiEC.lin <- resid(mOEC)
+f33 = ts_cor(resiEC.lin, lag.max = 72)
+f33
+```
+
+```{r}
+tsdiag(mOEC,gof.lag=72)
+```
+
+## Propiedad de causalidad y/o invertibilidad
+
+
+```{r}
+Mod(polyroot(c(1,-mOEC$model$phi)))
+```
+
+```{r}
+Mod(polyroot(c(1,mOEC$model$theta)))
+```
+
+```{r}
+f21 = ggplotly(autoplot(mOEC) +
+  geom_point(color="#440154", fill='#414487', shape=21, size=1) +
+  theme_bw() +
+  ggtitle(" <b> Invers roots model <b>") +
+  theme(plot.title = element_text(hjust = 0.5)))
+f21
+```
+
+## Estabilidad
+
+```{r}
+last=c(2017,12); trainEC.lin = window(serEC.lin, end=last)
+```
+
+```{r}
+bctrainEC.lin = (trainEC.lin^lambda-1)/lambda
+mEC_train.lin <- arima(bctrainEC.lin, order=c(2,1,0),
+                  seasonal=list(order=c(0,1,1), period=12))
+mEC_train.lin
+mOEC
+```
+
+```{r}
+cat("\nT-ratios:",round(mEC_train.lin$coef/sqrt(diag(mEC_train.lin$var.coef)),2))
+cat("\nT-ratios:",round(mOEC$coef/sqrt(diag(mOEC$var.coef)),2))
+```
+
+## Predicciones
+
+```{r}
+preEC.lin = predict(mEC_train.lin, n.ahead=12)
+
+pr1 = (lambda*(preEC.lin$pred)+1)^(1/lambda)
+
+tl1 = preEC.lin$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC.lin$se
+tl1 = (lambda*(tl1)+1)^(1/lambda)
+
+tu1 = preEC.lin$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC.lin$se
+tu1 = (lambda*(tu1)+1)^(1/lambda)
+```
+
+```{r}
+f23 = plot_ly(x=~time(serEC.lin), y=~serEC.lin,
+        type = "scatter",
+        mode = "lines+markers",
+        line = list(color="#2a788e"),
+        marker = list(color="#2a788e"),
+        name = "Observed"
+        ) %>%
+  add_trace(x = window(time(serEC.lin), start=c(2018,1)),
+            y = pr1,
+            line = list(color="rgb(68, 1, 84)", dash = "dash"),
+            marker = list(color="rgb(68, 1, 84)"),
+            name = "Predicted"
+            )%>%
+  add_ribbons(x = window(time(serEC.lin), start=c(2018,1)),
+              ymin=tl1, ymax=tu1,
+              line = list(color = 'rgba(34, 168, 132, 0.2)'),
+              fillcolor = 'rgba(34, 168, 132, 0.2)',
+              name = "95% confidence",
+              inherit = FALSE
+              ) %>%
+  layout(title='<b> Prediction for the test set using modelEC <b>',
+         xaxis=list(title='Time', range=c(2016,2019)),
+         yaxis=list(title='(Thousand million euros)')
+         )
+f23
+```
+
+
+## Selección
+
+### Medidas de capacidad de predicción
+
+```{r}
+start=c(2017,12); last=c(2018,12);
+obs = window(ser, start = start, end = last)
+```
+
+
+```{r}
+cat("RMSPE1: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
+cat("MAPE1: ", mean(abs(obs-pr1)/obs))
+```
+
+### Intervalos de confianza
+
+
+```{r}
+cat("Mean length of IC for model 1: ",mean(tu1-tl1))
+```
+
+
+### Medidas de adecuación a los datos
+
+```{r}
+cat("AIC Modelo 1: ", AIC(mOEC), "\n")
+cat("BIC Modelo 1: ", BIC(mOEC), "\n")
+```
 
 # Conclusiones y discusión
 
