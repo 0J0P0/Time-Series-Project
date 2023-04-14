@@ -1393,6 +1393,64 @@ cat("BIC Modelo 1: ", BIC(mEC), "\n")
 
 ...
 
+```{r}
+source("Practicas/atipics2.r")
+
+mod = mEC
+
+mod.atip=outdetec(mod,dif=c(1,12),crit=3,LS=T)
+
+atipics=mod.atip$atip[order(mod.atip$atip[,1]),]
+meses=c("Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic")
+data.frame(atipics,
+           Fecha=paste(meses[(atipics[,1]-1)%%12+1],
+                       start(bcserEC)[1]+((atipics[,1]-1)%/%12)),
+           PercVar=exp(atipics[,3])*100)
+```
+
+```{r}
+bcserEC.lin=lineal(bcserEC,mod.atip$atip)
+
+serEC.lin = (lambda*(bcserEC.lin)+1)^(1/lambda)
+
+plot(serEC.lin, col=2)
+lines(serEC)
+
+f1 = plot_ly(x = time(serEC), y = serEC,
+             type = "scatter",
+             mode="lines",
+             fill="tonexty",
+             line = list(color = "#2a788e"),
+             fillcolor="rgba(42, 120, 142, 0.5)",
+             name = "serEC"
+             ) %>% 
+  add_trace(x=~time(serEC.lin), y=~serEC.lin,
+            type = "scatter",
+            name = "serEC.lin",
+            mode="lines",
+            fill=F,
+            line = list(color = "rgb(65, 68, 135)")
+             ) %>%
+  layout(title='<b> Total exportations in Spain <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')
+         ) 
+f1
+```
+
+
+```{r}
+plot(bcserEC-bcserEC.lin)
+```
+
+
+```{r}
+d1d12bcserEC.lin=diff(diff(bcserEC.lin,12))
+plot(d1d12bcserEC.lin)
+```
+
+
+
 ## Re-identificación modelo
 
 ```{r}
