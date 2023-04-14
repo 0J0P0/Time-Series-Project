@@ -1023,7 +1023,7 @@ m1EC
 
 ```{r}
 bcserEC = bcser - coef(m1EC)["vEa"]*vEa - coef(m1EC)["vTD"]*vTD
-# (lambda*(cbind(bcser, bcserEC))+1)^(1/lambda)
+serEC = (lambda*(bcserEC)+1)^(1/lambda)
 ```
 
 
@@ -1295,10 +1295,11 @@ f21
 ## Estabilidad
 
 ```{r}
-last=c(2017,12); bctrainEC=window(bcser, end=last)
+last=c(2017,12); trainEC=window(serEC, end=last)
 ```
 
 ```{r}
+bctrainEC = (train^lambda-1)/lambda
 mEC_train <- arima(bctrainEC, order=c(2,1,0),
                   seasonal=list(order=c(0,1,1), period=12))
 mEC_train
@@ -1325,20 +1326,20 @@ tu1 = (lambda*(tu1)+1)^(1/lambda)
 ```
 
 ```{r}
-f23 = plot_ly(x=~time(bcserEC), y=~bcserEC,
+f23 = plot_ly(x=~time(serEC), y=~serEC,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
         marker = list(color="#2a788e"),
         name = "Observed"
         ) %>%
-  add_trace(x = window(time(bcserEC), start=c(2018,1)),
+  add_trace(x = window(time(serEC), start=c(2018,1)),
             y = pr1,
             line = list(color="rgb(68, 1, 84)", dash = "dash"),
             marker = list(color="rgb(68, 1, 84)"),
             name = "Predicted"
             )%>%
-  add_ribbons(x = window(time(bcserEC), start=c(2018,1)),
+  add_ribbons(x = window(time(serEC), start=c(2018,1)),
               ymin=tl1, ymax=tu1,
               line = list(color = 'rgba(34, 168, 132, 0.2)'),
               fillcolor = 'rgba(34, 168, 132, 0.2)',
