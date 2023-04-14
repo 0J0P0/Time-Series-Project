@@ -1458,13 +1458,13 @@ f1
 
 
 ```{r}
-var(bcserEC.lin)
+var(bcserEC.lin)[1]
 d12bcserEC.lin=diff(bcserEC.lin,12)
-var(d12bcserEC.lin)
+var(d12bcserEC.lin)[1]
 d1d12bcserEC.lin=diff(d12bcserEC.lin)
-var(d12bcserEC.lin)
+var(d1d12bcserEC.lin)[1]
 d1d1d12bcserEC.lin=diff(d1d12bcserEC.lin)
-var(d1d1d12bcserEC.lin)
+var(d1d1d12bcserEC.lin)[1]
 ```
 
 
@@ -1483,6 +1483,13 @@ f1 = plot_ly(x = time(d1d12bcserEC.lin), y = (d1d12bcserEC.lin),
          yaxis=list(title='(Thousand million euros)')
          )  
 f1
+```
+
+
+```{r}
+var(d1d12bcser)
+var(d1d12bcserEC)[1]
+var(d1d12bcserEC.lin)[1]
 ```
 
 
