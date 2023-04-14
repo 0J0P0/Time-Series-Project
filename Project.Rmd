@@ -968,14 +968,14 @@ length(ser)
 ```{r}
 start = c(1999,1,length(ser))
 vEa = Weaster(start)
-vEa
+# vEa
 ```
 
 ...
 
 ```{r}
 vTD = Wtrad(start)
-vTD
+# vTD
 ```
 
 ```{r}
@@ -1011,20 +1011,19 @@ m1EC
 
 
 ```{r}
-coef(m1EC)["vEa"]*vEa
+# coef(m1EC)["vEa"]*vEa
 ```
 
 
 ```{r}
-coef(m1EC)["vTD"]*vTD
+# coef(m1EC)["vTD"]*vTD
 ```
 
 ...
 
 ```{r}
 bcserEC = bcser - coef(m1EC)["vEa"]*vEa - coef(m1EC)["vTD"]*vTD
-
-(lambda*(cbind(bcser, bcserEC))+1)^(1/lambda)
+# (lambda*(cbind(bcser, bcserEC))+1)^(1/lambda)
 ```
 
 
@@ -1034,18 +1033,49 @@ bcserEC = bcser - coef(m1EC)["vEa"]*vEa - coef(m1EC)["vTD"]*vTD
 m <- apply(matrix(bcserEC, nrow=12), 2, mean)
 v <- apply(matrix(bcserEC, nrow=12), 2, var)
 
-plot(v~m)
+f25 = plot_ly(x=~m, y=~v,
+        marker = list(size = 7,
+                      color = '#2a788e',
+                      line = list(color = '#414487',width = 1))
+        ) %>%
+  layout(title='<b> Varience~Mean <b>',
+         xaxis=list(title='Mean'),
+         yaxis=list(title='Variance'))
+f25
 ```
 
 
 ```{r}
-monthplot(bcserEC)
+f26 = ts_seasonal(bcserEC, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f26
 ```
 
 ```{r}
 d12bcserEC = diff(bcserEC, 12)
-plot(d12bcserEC)
 ```
+
+```{r}
+f27 = plot_ly() %>%
+  add_trace(x=~time(d12bcserEC), y=~d12bcserEC,
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
+  add_trace(x=~time(d12bcserEC), y=~mean(d12bcserEC),
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
+  layout(title='<b> Time Series <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')) 
+f27
+```
+
 
 ```{r}
 var(d12bcserEC)
@@ -1055,29 +1085,58 @@ var(diff(diff(d12bcserEC)))
 
 ```{r}
 d1d12bcserEC = diff(d12bcserEC)
-plot(d1d12bcserEC)
+```
+
+```{r}
+f28 = plot_ly() %>%
+  add_trace(x=~time(d1d12bcserEC), y=~d1d12bcserEC,
+            type = "scatter",
+            fill="tonexty",
+            mode="lines",
+            line = list(color = "#2a788e"),
+            fillcolor="rgba(42, 120, 142, 0.5)",
+            name='Time Series'
+            ) %>%
+  add_trace(x=~time(d1d12bcserEC), y=~mean(d1d12bcserEC),
+            type = "scatter",
+            mode="lines",
+            name='Mean',
+            line=list(color='#rgb(68, 1, 84)', dash='dash')
+            ) %>%
+  layout(title='<b> Stationary Time Series <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')) 
+f28
 ```
 
 
 ```{r}
-ts_cor(d1d12bcserEC, lag.max = 72)
+var(d1d12bcser)
+var(d1d12bcserEC)
+```
+
+
+
+```{r}
+f29 = ts_cor(d1d12bcserEC, lag.max = 72)
+f29
 ```
 
 ```{r}
-# xreg = data.frame(vEa, vTD)
-# 
-# for (i in 1:13)
-#   xreg = xreg[-1,]
-# 
-# arima(d1d12bcser,order=c(2,0,0),
-#            seasonal=list(order=c(0,0,1),period=12),
-#            xreg=xreg)
+arima(d1d12bcserEC,order=c(0,0,1),
+           seasonal=list(order=c(0,0,1),period=12))
 ```
 
+
 ```{r}
-mEC = arima(bcser,order=c(2,1,0),
-           seasonal=list(order=c(0,1,1),period=12),
-           xreg=data.frame(vEa, vTD))
+arima(d1d12bcserEC,order=c(2,0,0),
+           seasonal=list(order=c(0,0,1),period=12))
+```
+
+
+```{r}
+mEC = arima(bcserEC,order=c(2,1,0),
+           seasonal=list(order=c(0,1,1),period=12))
 mEC
 ```
 
@@ -1088,10 +1147,6 @@ mEC
 
 ```{r}
 cat("\nT-ratios:",round(mEC$coef/sqrt(diag(mEC$var.coef)),2))
-```
-
-```{r}
-
 ```
 
 ...
@@ -1133,7 +1188,7 @@ p1 = plot_ly() %>%
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)'))
 
-p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resiEC))) +
+p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcserEC), y=abs(resiEC))) +
   geom_smooth(fill="#2a788e") + 
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
@@ -1141,10 +1196,9 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcser), y=abs(resiEC))) +
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-subplot(p1, p2, nrows=2, shareX = T) %>%
+f30 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-
-scatter.smooth(sqrt(abs(resiEC)), lpars = list(col=2))
+f30
 ```
 
 ...
@@ -1154,7 +1208,7 @@ scatter.smooth(sqrt(abs(resiEC)), lpars = list(col=2))
 ...
 
 ```{r}
-ggplot(data=NULL, aes(sample=resiEC)) +
+f31 = ggplot(data=NULL, aes(sample=resiEC)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -1162,12 +1216,13 @@ ggplot(data=NULL, aes(sample=resiEC)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
+f31
 ```
 
 ...
 
 ```{r}
-plot_ly() %>%
+f32 = plot_ly() %>%
   add_histogram(x=~resiEC,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -1190,6 +1245,7 @@ plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
+f32
 ```
 
 ```{r}
@@ -1204,17 +1260,156 @@ shapiro.test(resiEC)
 
 ```{r}
 resiEC <- resid(mEC)
-ts_cor(resiEC, lag.max = 72)
+f33 = ts_cor(resiEC, lag.max = 72)
+f33
 ```
 
 ...
 
 ```{r}
 tsdiag(mEC,gof.lag=72)
-
 ```
 
 ...
+
+## Propiedad de causalidad y/o invertibilidad
+
+
+```{r}
+Mod(polyroot(c(1,-mEC$model$phi)))
+```
+
+```{r}
+Mod(polyroot(c(1,mEC$model$theta)))
+```
+
+```{r}
+f21 = ggplotly(autoplot(mEC) +
+  geom_point(color="#440154", fill='#414487', shape=21, size=1) +
+  theme_bw() +
+  ggtitle(" <b> Invers roots model <b>") +
+  theme(plot.title = element_text(hjust = 0.5)))
+f21
+```
+
+## Estabilidad
+
+```{r}
+last=c(2017,12); bctrainEC=window(bcser, end=last)
+```
+
+```{r}
+mEC_train <- arima(bctrainEC, order=c(2,1,0),
+                  seasonal=list(order=c(0,1,1), period=12))
+mEC_train
+mEC
+```
+
+```{r}
+cat("\nT-ratios:",round(mEC_train$coef/sqrt(diag(mEC_train$var.coef)),2))
+cat("\nT-ratios:",round(mEC$coef/sqrt(diag(mEC$var.coef)),2))
+```
+
+## Predicciones
+
+```{r}
+preEC = predict(mEC_train, n.ahead=12)
+
+pr1 = (lambda*(preEC$pred)+1)^(1/lambda)
+
+tl1 = preEC$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC$se
+tl1 = (lambda*(tl1)+1)^(1/lambda)
+
+tu1 = preEC$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC$se
+tu1 = (lambda*(tu1)+1)^(1/lambda)
+```
+
+```{r}
+f23 = plot_ly(x=~time(bcserEC), y=~bcserEC,
+        type = "scatter",
+        mode = "lines+markers",
+        line = list(color="#2a788e"),
+        marker = list(color="#2a788e"),
+        name = "Observed"
+        ) %>%
+  add_trace(x = window(time(bcserEC), start=c(2018,1)),
+            y = pr1,
+            line = list(color="rgb(68, 1, 84)", dash = "dash"),
+            marker = list(color="rgb(68, 1, 84)"),
+            name = "Predicted"
+            )%>%
+  add_ribbons(x = window(time(bcserEC), start=c(2018,1)),
+              ymin=tl1, ymax=tu1,
+              line = list(color = 'rgba(34, 168, 132, 0.2)'),
+              fillcolor = 'rgba(34, 168, 132, 0.2)',
+              name = "95% confidence",
+              inherit = FALSE
+              ) %>%
+  layout(title='<b> Prediction for the test set using model <b>',
+         xaxis=list(title='Time', range=c(2016,2019)),
+         yaxis=list(title='(Thousand million euros)')
+         )
+f23
+```
+
+
+## Selección
+
+LLegados a este punto del análisis, se tiene que escoger un único modelo de entre los dos propuestos para proceder a afinarlo con el tratamiento de efectos de calendario y seguidamente el tratamiento de outliers.
+
+Para este proceso de selección nos apoyaremos en distintas medidas, desde adecuación hasta predicción de los datos. Incluyendo también una discusión en terminos de las hipótesis verificadas en el apartado de validación.
+
+### Medidas de capacidad de predicción
+
+```{r}
+start=c(2017,12); last=c(2018,12);
+obs = window(ser, start = start, end = last)
+```
+
+Se ve clara la diferencia entre los valores para los errores del modelo 1 y el modelo 2. La calidad de predicción del modelo 1 es superior, ya que los valores de los errores para este modelo son menores.
+
+#### Modelo 1
+
+```{r}
+cat("RMSPE1: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
+cat("MAPE1: ", mean(abs(obs-pr1)/obs))
+```
+
+#### Modelo 2
+
+```{r}
+cat("RMSPE2: ", sqrt(mean(((obs-pr2)/obs)^2)), "\n")
+cat("MAPE2: ", mean(abs(obs-pr2)/obs))
+```
+
+### Intervalos de confianza
+
+#### Modelo 1
+
+```{r}
+cat("Mean length of IC for model 1: ",mean(tu1-tl1))
+
+```
+
+#### Modelo 2
+
+```{r}
+cat("Mean length of IC for model 2: ",mean(tu2-tl2))
+```
+
+En cuanto a la media de los intervalos, el modelo 2 presenta una distancia entre los dos límites del intervalo más pequeña,
+
+MEJORES INTERVALOS EN M2, PERO LA varianza NO ES CONSTANTE XD
+
+### Medidas de adecuación a los datos
+
+```{r}
+cat("AIC Modelo 1: ", AIC(m1), "\n")
+cat("AIC Modelo 2: ", AIC(m2), "\n")
+cat("BIC Modelo 1: ", BIC(m1), "\n")
+cat("BIC Modelo 2: ", BIC(m2), "\n")
+```
+
 
 ## Tratamiento de atípicos
 
@@ -1378,10 +1573,12 @@ tsdiag(m1,gof.lag=72)
 .
 
 ```{r}
-# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24)
+# rm(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24)
+
+# f = list(f25,f26,f27,f28,f29,f30,f31,f32,f33)
 # n = length(f)
 # for (i in 1:n) {
-#   orca(f[[i]], paste0("./Figures/f",i,".png"))
+#   orca(f[[i]], paste0("./f",i,".png"))
 #   cat(i)
 # }
 ```
