@@ -1284,12 +1284,12 @@ Mod(polyroot(c(1,mEC$model$theta)))
 ```
 
 ```{r}
-f21 = ggplotly(autoplot(mEC) +
+f34 = ggplotly(autoplot(mEC) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
-f21
+f34
 ```
 
 ## Estabilidad
@@ -1326,7 +1326,7 @@ tu1 = (lambda*(tu1)+1)^(1/lambda)
 ```
 
 ```{r}
-f23 = plot_ly(x=~time(serEC), y=~serEC,
+f35 = plot_ly(x=~time(serEC), y=~serEC,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
@@ -1350,7 +1350,7 @@ f23 = plot_ly(x=~time(serEC), y=~serEC,
          xaxis=list(title='Time', range=c(2016,2019)),
          yaxis=list(title='(Thousand million euros)')
          )
-f23
+f35
 ```
 
 
@@ -1416,7 +1416,7 @@ serEC.lin = (lambda*(bcserEC.lin)+1)^(1/lambda)
 # plot(serEC.lin, col=2)
 # lines(serEC)
 
-f1 = plot_ly(x = time(serEC), y = serEC,
+f36 = plot_ly(x = time(serEC), y = serEC,
              type = "scatter",
              mode="lines",
              fill="tonexty",
@@ -1435,7 +1435,7 @@ f1 = plot_ly(x = time(serEC), y = serEC,
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')
          ) 
-f1
+f36
 ```
 
 
@@ -1445,7 +1445,7 @@ f1
 m <- apply(matrix(bcserEC.lin, nrow=12), 2, mean)
 v <- apply(matrix(bcserEC.lin, nrow=12), 2, var)
 
-f25 = plot_ly(x=~m, y=~v,
+f37 = plot_ly(x=~m, y=~v,
         marker = list(size = 7,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
@@ -1453,13 +1453,13 @@ f25 = plot_ly(x=~m, y=~v,
   layout(title='<b> Varience~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
-f25
+f37
 ```
 
 
 ```{r}
-f26 = ts_seasonal(bcserEC.lin, type="all", title=" <b> Seasonality plot for Time Series <b>")
-f26
+f38 = ts_seasonal(bcserEC.lin, type="all", title=" <b> Seasonality plot for Time Series <b>")
+f38
 ```
 
 ```{r}
@@ -1467,7 +1467,7 @@ d12bcserEC.lin = diff(bcserEC.lin, 12)
 ```
 
 ```{r}
-f27 = plot_ly() %>%
+f39 = plot_ly() %>%
   add_trace(x=~time(d12bcserEC.lin), y=~d12bcserEC.lin,
             type = "scatter",
             fill="tonexty",
@@ -1485,7 +1485,7 @@ f27 = plot_ly() %>%
   layout(title='<b> Time Series <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')) 
-f27
+f39
 ```
 
 
@@ -1500,7 +1500,7 @@ d1d12bcserEC.lin = diff(d12bcserEC.lin)
 ```
 
 ```{r}
-f28 = plot_ly() %>%
+f40 = plot_ly() %>%
   add_trace(x=~time(d1d12bcserEC.lin), y=~d1d12bcserEC.lin,
             type = "scatter",
             fill="tonexty",
@@ -1518,7 +1518,7 @@ f28 = plot_ly() %>%
   layout(title='<b> Stationary Time Series <b>',
          xaxis=list(title='Time'),
          yaxis=list(title='(Thousand million euros)')) 
-f28
+f40
 ```
 
 
@@ -1530,8 +1530,8 @@ var(d1d12bcserEC.lin)[1]
 
 
 ```{r}
-f29 = ts_cor(d1d12bcserEC.lin, lag.max = 72)
-f29
+f41 = ts_cor(d1d12bcserEC.lin, lag.max = 72)
+f41
 ```
 
 ```{r}
@@ -1602,15 +1602,15 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcserEC.lin), y=abs(resiEC.lin))
   ggtitle(" <b> Absolute value of model 1 residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
-f30 = subplot(p1, p2, nrows=2, shareX = T) %>%
+f42 = subplot(p1, p2, nrows=2, shareX = T) %>%
   layout(title='<b> Constant Variance plots <b>')
-f30
+f42
 ```
 
 ### Hipótesis de normalidad de residuos
 
 ```{r}
-f31 = ggplot(data=NULL, aes(sample=resiEC.lin)) +
+f43 = ggplot(data=NULL, aes(sample=resiEC.lin)) +
   stat_qq_band(color='#1F968BFF', fill='#1F968BFF', alpha=0.3) +
   stat_qq_line(color='#39568CFF') +
   stat_qq_point(color="#440154FF", fill='#3b528b', shape=21) +
@@ -1618,13 +1618,13 @@ f31 = ggplot(data=NULL, aes(sample=resiEC.lin)) +
   xlab("Theoretical Quantiles") + ylab("Sample Quantiles") +
   ggtitle("Normal Q-Q Plot") +
   theme(plot.title = element_text(hjust = 0.5))
-f31
+f43
 ```
 
 ...
 
 ```{r}
-f32 = plot_ly() %>%
+f44 = plot_ly() %>%
   add_histogram(x=~resiEC.lin,
         name="Model 1 residuals",
         marker = list(color = "#22a884",
@@ -1647,7 +1647,7 @@ f32 = plot_ly() %>%
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
-f32
+f44
 ```
 
 ```{r}
@@ -1658,8 +1658,8 @@ shapiro.test(resiEC.lin)
 
 ```{r}
 resiEC.lin <- resid(mOEC)
-f33 = ts_cor(resiEC.lin, lag.max = 72)
-f33
+f45 = ts_cor(resiEC.lin, lag.max = 72)
+f45
 ```
 
 ```{r}
@@ -1678,12 +1678,12 @@ Mod(polyroot(c(1,mOEC$model$theta)))
 ```
 
 ```{r}
-f21 = ggplotly(autoplot(mOEC) +
+f46 = ggplotly(autoplot(mOEC) +
   geom_point(color="#440154", fill='#414487', shape=21, size=1) +
   theme_bw() +
   ggtitle(" <b> Invers roots model <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
-f21
+f46
 ```
 
 ## Estabilidad
@@ -1720,7 +1720,7 @@ tu1 = (lambda*(tu1)+1)^(1/lambda)
 ```
 
 ```{r}
-f23 = plot_ly(x=~time(serEC.lin), y=~serEC.lin,
+f47 = plot_ly(x=~time(serEC.lin), y=~serEC.lin,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
@@ -1744,7 +1744,7 @@ f23 = plot_ly(x=~time(serEC.lin), y=~serEC.lin,
          xaxis=list(title='Time', range=c(2016,2019)),
          yaxis=list(title='(Thousand million euros)')
          )
-f23
+f47
 ```
 
 
@@ -1789,12 +1789,13 @@ cat("BIC Modelo 1: ", BIC(mOEC), "\n")
 .
 
 ```{r}
-# rm(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24)
-
-# f = list(f25,f26,f27,f28,f29,f30,f31,f32,f33)
+# 
+# f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47)
 # n = length(f)
 # for (i in 1:n) {
 #   orca(f[[i]], paste0("./f",i,".png"))
 #   cat(i)
 # }
+# 
+# rm(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47)
 ```
