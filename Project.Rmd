@@ -22,16 +22,9 @@ library(TSstudio)
 
 # Titulo
 
-...
-
-# Indice
-
-...
-
 # Introducción
 
 ## Descripción Serie Temporal
-
 
 ```{r}
 ser <- ts(read.table("Data/export.dat")/1000,start=1999,freq=12)
@@ -91,22 +84,11 @@ f2 = subplot(p1, p2, p3, p4, nrows=4) %>%
 f2;
 ```
 
-
-## Motivación
-
-## Descripción sintética
-
 # Resultados e interpretación
-
-...
 
 ## Identificación
 
-...
-
 ### Transformación de la serie
-
-...
 
 #### Varianza constante
 
@@ -430,8 +412,6 @@ cat("\nT-ratios:",round(m2$coef/sqrt(diag(m2$var.coef)),2))
 Fijandóse en los T-ratios, se contempla que todos tienen un valor absoluto por encima de 2, indicando que el resto de parámetros si tienen significación en el modelo.
 
 ## Validación
-
-... (10 de 4)
 
 ### Varianza constante de residuos
 
@@ -952,26 +932,19 @@ cat("BIC Modelo 2: ", BIC(m2), "\n")
 
 ## Tratamiento de efectos de calendario
 
-...
-
 ```{r}
 source("Practicas/calendarEffects.r")
 ```
 
-...
-
 ```{r}
 length(ser)
 ```
-
 
 ```{r}
 start = c(1999,1,length(ser))
 vEa = Weaster(start)
 # vEa
 ```
-
-...
 
 ```{r}
 vTD = Wtrad(start)
@@ -982,8 +955,6 @@ vTD = Wtrad(start)
 m1
 ```
 
-...
-
 ```{r}
 m1Ea = arima(bcser, order=c(2,1,1),
              seasonal=list(order=c(4,1,0), period=12),
@@ -991,16 +962,12 @@ m1Ea = arima(bcser, order=c(2,1,1),
 m1Ea
 ```
 
-...
-
 ```{r}
 m1TD = arima(bcser, order=c(2,1,1),
              seasonal=list(order=c(4,1,0), period=12),
              xreg = data.frame(vTD))
 m1TD
 ```
-
-...
 
 ```{r}
 m1EC = arima(bcser, order=c(2,1,1),
@@ -1143,21 +1110,13 @@ mEC
 
 ## Estimación modelo con efectos de calendario
 
-...
-
 ```{r}
 cat("\nT-ratios:",round(mEC$coef/sqrt(diag(mEC$var.coef)),2))
 ```
 
-...
-
 ## Validación
 
-...
-
 ### Varianza constante de residuos
-
-...
 
 ```{r}
 resiEC <- resid(mEC)
@@ -1201,11 +1160,7 @@ f30 = subplot(p1, p2, nrows=2, shareX = T) %>%
 f30
 ```
 
-...
-
 ### Hipótesis de normalidad de residuos
-
-...
 
 ```{r}
 f31 = ggplot(data=NULL, aes(sample=resiEC)) +
@@ -1218,8 +1173,6 @@ f31 = ggplot(data=NULL, aes(sample=resiEC)) +
   theme(plot.title = element_text(hjust = 0.5))
 f31
 ```
-
-...
 
 ```{r}
 f32 = plot_ly() %>%
@@ -1252,11 +1205,7 @@ f32
 shapiro.test(resiEC)
 ```
 
-...
-
 ### Independencia de residuos
-
-...
 
 ```{r}
 resiEC <- resid(mEC)
@@ -1264,16 +1213,11 @@ f33 = ts_cor(resiEC, lag.max = 72)
 f33
 ```
 
-...
-
 ```{r}
 tsdiag(mEC,gof.lag=72)
 ```
 
-...
-
 ## Propiedad de causalidad y/o invertibilidad
-
 
 ```{r}
 Mod(polyroot(c(1,-mEC$model$phi)))
@@ -1356,10 +1300,6 @@ f35
 
 ## Selección
 
-LLegados a este punto del análisis, se tiene que escoger un único modelo de entre los dos propuestos para proceder a afinarlo con el tratamiento de efectos de calendario y seguidamente el tratamiento de outliers.
-
-Para este proceso de selección nos apoyaremos en distintas medidas, desde adecuación hasta predicción de los datos. Incluyendo también una discusión en terminos de las hipótesis verificadas en el apartado de validación.
-
 ### Medidas de capacidad de predicción
 
 ```{r}
@@ -1375,7 +1315,6 @@ cat("MAPE1: ", mean(abs(obs-pr1)/obs))
 
 ### Intervalos de confianza
 
-
 ```{r}
 cat("Mean length of IC for model 1: ",mean(tu1-tl1))
 ```
@@ -1390,8 +1329,6 @@ cat("BIC Modelo 1: ", BIC(mEC), "\n")
 
 
 ## Tratamiento de atípicos
-
-...
 
 ```{r}
 source("Practicas/atipics2.r")
@@ -1412,9 +1349,6 @@ data.frame(atipics,
 bcserEC.lin=lineal(bcserEC,mod.atip$atip)
 
 serEC.lin = (lambda*(bcserEC.lin)+1)^(1/lambda)
-
-# plot(serEC.lin, col=2)
-# lines(serEC)
 
 f36 = plot_ly(x = time(serEC), y = serEC,
              type = "scatter",
@@ -1437,7 +1371,6 @@ f36 = plot_ly(x = time(serEC), y = serEC,
          ) 
 f36
 ```
-
 
 ## Re-identificación modelo
 
@@ -1554,8 +1487,6 @@ mOEC
 
 
 ## Estimación modelo con efectos de calendario
-
-...
 
 ```{r}
 cat("\nT-ratios:",round(mOEC$coef/sqrt(diag(mOEC$var.coef)),2))
@@ -1778,16 +1709,6 @@ cat("AIC Modelo 1: ", AIC(mOEC), "\n")
 cat("BIC Modelo 1: ", BIC(mOEC), "\n")
 ```
 
-# Conclusiones y discusión
-
-...
-
-# Bibliografía
-
-...
-
-.
-
 ```{r}
 # 
 # f = list(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47)
@@ -1797,5 +1718,5 @@ cat("BIC Modelo 1: ", BIC(mOEC), "\n")
 #   cat(i)
 # }
 # 
-# rm(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47)
+rm(f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20,f21,f22,f23,f24,f25,f26,f27,f28,f29,f30,f31,f32,f33,f34,f35,f36,f37,f38,f39,f40,f41,f42,f43,f44,f45,f46,f47)
 ```
