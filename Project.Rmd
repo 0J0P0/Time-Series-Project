@@ -101,7 +101,7 @@ f3 = plot_ly(x=~m, y=~v,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
         ) %>%
-  layout(title='<b> Varience~Mean <b>',
+  layout(title='<b> Variance~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
 f3;
@@ -136,7 +136,7 @@ f5 = plot_ly(x=~m, y=~v,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
         ) %>%
-  layout(title='<b> Varience~Mean <b>',
+  layout(title='<b> Variance~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
 f5
@@ -1005,7 +1005,7 @@ f25 = plot_ly(x=~m, y=~v,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
         ) %>%
-  layout(title='<b> Varience~Mean <b>',
+  layout(title='<b> Variance~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
 f25
@@ -1383,7 +1383,7 @@ f37 = plot_ly(x=~m, y=~v,
                       color = '#2a788e',
                       line = list(color = '#414487',width = 1))
         ) %>%
-  layout(title='<b> Varience~Mean <b>',
+  layout(title='<b> Variance~Mean <b>',
          xaxis=list(title='Mean'),
          yaxis=list(title='Variance'))
 f37
@@ -1673,7 +1673,7 @@ f47 = plot_ly(x=~time(ser), y=~ser,
               name = "95% confidence",
               inherit = FALSE
               ) %>%
-  layout(title='<b> Prediction for the test set using modelEC <b>',
+  layout(title='<b> Prediction for the test set using modelEC.lin <b>',
          xaxis=list(title='Time', range=c(2016,2019)),
          yaxis=list(title='(Thousand million euros)')
          )
