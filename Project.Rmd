@@ -1270,20 +1270,20 @@ tu1 = (lambda*(tu1)+1)^(1/lambda)
 ```
 
 ```{r}
-f35 = plot_ly(x=~time(serEC), y=~serEC,
+f35 = plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
         marker = list(color="#2a788e"),
         name = "Observed"
         ) %>%
-  add_trace(x = window(time(serEC), start=c(2018,1)),
+  add_trace(x = window(time(ser), start=c(2018,1)),
             y = pr1,
             line = list(color="rgb(68, 1, 84)", dash = "dash"),
             marker = list(color="rgb(68, 1, 84)"),
             name = "Predicted"
             )%>%
-  add_ribbons(x = window(time(serEC), start=c(2018,1)),
+  add_ribbons(x = window(time(ser), start=c(2018,1)),
               ymin=tl1, ymax=tu1,
               line = list(color = 'rgba(34, 168, 132, 0.2)'),
               fillcolor = 'rgba(34, 168, 132, 0.2)',
@@ -1639,32 +1639,34 @@ cat("\nT-ratios:",round(mOEC$coef/sqrt(diag(mOEC$var.coef)),2))
 ## Predicciones
 
 ```{r}
+wLS <- sum(mod.atip$atip[mod.atip$atip[, 2] == "LS", 3])
+
 preEC.lin = predict(mEC_train.lin, n.ahead=12)
 
-pr1 = (lambda*(preEC.lin$pred)+1)^(1/lambda)
+pr1 = (lambda*(preEC.lin$pred+wLS)+1)^(1/lambda)
 
 tl1 = preEC.lin$pred - qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC.lin$se
-tl1 = (lambda*(tl1)+1)^(1/lambda)
+tl1 = (lambda*(tl1+wLS)+1)^(1/lambda)
 
 tu1 = preEC.lin$pred + qnorm(1-0.05/2,mean = 0,sd = 1,lower.tail = TRUE)*preEC.lin$se
-tu1 = (lambda*(tu1)+1)^(1/lambda)
+tu1 = (lambda*(tu1+wLS)+1)^(1/lambda)
 ```
 
 ```{r}
-f47 = plot_ly(x=~time(serEC.lin), y=~serEC.lin,
+f47 = plot_ly(x=~time(ser), y=~ser,
         type = "scatter",
         mode = "lines+markers",
         line = list(color="#2a788e"),
         marker = list(color="#2a788e"),
         name = "Observed"
         ) %>%
-  add_trace(x = window(time(serEC.lin), start=c(2018,1)),
+  add_trace(x = window(time(ser), start=c(2018,1)),
             y = pr1,
             line = list(color="rgb(68, 1, 84)", dash = "dash"),
             marker = list(color="rgb(68, 1, 84)"),
             name = "Predicted"
             )%>%
-  add_ribbons(x = window(time(serEC.lin), start=c(2018,1)),
+  add_ribbons(x = window(time(ser), start=c(2018,1)),
               ymin=tl1, ymax=tu1,
               line = list(color = 'rgba(34, 168, 132, 0.2)'),
               fillcolor = 'rgba(34, 168, 132, 0.2)',
