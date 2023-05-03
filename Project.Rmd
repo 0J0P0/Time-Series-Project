@@ -1045,9 +1045,9 @@ f27
 
 
 ```{r}
-var(d12bcserEC)
-var(diff(d12bcserEC))
-var(diff(diff(d12bcserEC)))
+var(d12bcserEC)[1]
+var(diff(d12bcserEC))[1]
+var(diff(diff(d12bcserEC)))[1]
 ```
 
 ```{r}
@@ -1090,23 +1090,21 @@ f29
 ```
 
 ```{r}
-arima(d1d12bcserEC,order=c(0,0,1),
-           seasonal=list(order=c(0,0,1),period=12))
+vEa2 = window(vEa,end=c(2017,11))
+vTD2 = window(vTD,end=c(2017,11))
+
+arima(bcser,order=c(0,1,1),
+      seasonal=list(order=c(0,1,1),period=12),
+      xreg=data.frame(vEa,vTD))
 ```
 
 
 ```{r}
-arima(d1d12bcserEC,order=c(2,0,0),
-           seasonal=list(order=c(0,0,1),period=12))
-```
-
-
-```{r}
-mEC = arima(bcserEC,order=c(2,1,0),
-           seasonal=list(order=c(0,1,1),period=12))
+mEC = arima(bcser,order=c(2,1,0),
+           seasonal=list(order=c(0,1,1),period=12),
+      xreg=data.frame(vEa,vTD))
 mEC
 ```
-
 
 ## Estimación modelo con efectos de calendario
 
@@ -1152,7 +1150,7 @@ p2 = ggplotly(ggplot(data=NULL, aes(x=time(d1d12bcserEC), y=abs(resiEC))) +
   geom_point(color="#440154", fill='#414487', shape=21) +
   theme_bw() + 
   xlab("Time") + ylab("abs(residuals 1)") +
-  ggtitle(" <b> Absolute value of model 1 residuals <b>") +
+  ggtitle(" <b> Absolute value of model residuals <b>") +
   theme(plot.title = element_text(hjust = 0.5)))
 
 f30 = subplot(p1, p2, nrows=2, shareX = T) %>%
@@ -1194,7 +1192,7 @@ f32 = plot_ly() %>%
                        showline = FALSE,
                        showticklabels = FALSE,
                        showgrid = FALSE),
-         title='<b> Histogram of model 1 residuals <b>',
+         title='<b> Histogram of model residuals <b>',
          xaxis=list(title='Residuals'),
          yaxis=list(title='Density')
          )
@@ -1239,13 +1237,16 @@ f34
 ## Estabilidad
 
 ```{r}
-last=c(2017,12); trainEC=window(serEC, end=last)
+last=c(2017,12); trainEC=window(ser, end=last)
+vEa2=window(vEa,end=last)
+vTD2=window(vTD,end=last)
 ```
 
 ```{r}
 bctrainEC = (trainEC^lambda-1)/lambda
 mEC_train <- arima(bctrainEC, order=c(2,1,0),
-                  seasonal=list(order=c(0,1,1), period=12))
+                  seasonal=list(order=c(0,1,1), period=12),
+                  xreg=data.frame(vEa2,vTD2))
 mEC_train
 mEC
 ```
@@ -1258,7 +1259,10 @@ cat("\nT-ratios:",round(mEC$coef/sqrt(diag(mEC$var.coef)),2))
 ## Predicciones
 
 ```{r}
-preEC = predict(mEC_train, n.ahead=12)
+
+vEa2=window(vEa,start=last+c(0,1))
+vTD2=window(vTD,start=last+c(0,1))
+preEC = predict(mEC_train, n.ahead=12,newxreg=data.frame(vEa2,vTD2))
 
 pr1 = (lambda*(preEC$pred)+1)^(1/lambda)
 
@@ -1304,27 +1308,27 @@ f35
 
 ```{r}
 start=c(2017,12); last=c(2018,12);
-obs = window(serEC, start = start, end = last)
+obs = window(ser, start = start, end = last)
 ```
 
 
 ```{r}
-cat("RMSPE1: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
-cat("MAPE1: ", mean(abs(obs-pr1)/obs))
+cat("RMSPE: ", sqrt(mean(((obs-pr1)/obs)^2)), "\n")
+cat("MAPE: ", mean(abs(obs-pr1)/obs))
 ```
 
 ### Intervalos de confianza
 
 ```{r}
-cat("Mean length of IC for model 1: ",mean(tu1-tl1))
+cat("Mean length of IC for model: ",mean(tu1-tl1))
 ```
 
 
 ### Medidas de adecuación a los datos
 
 ```{r}
-cat("AIC Modelo 1: ", AIC(mEC), "\n")
-cat("BIC Modelo 1: ", BIC(mEC), "\n")
+cat("AIC Modelo: ", AIC(mEC), "\n")
+cat("BIC Modelo: ", BIC(mEC), "\n")
 ```
 
 
@@ -1346,21 +1350,21 @@ data.frame(atipics,
 ```
 
 ```{r}
-bcserEC.lin=lineal(bcserEC,mod.atip$atip)
+bcser.lin=lineal(bcser,mod.atip$atip)
 
-serEC.lin = (lambda*(bcserEC.lin)+1)^(1/lambda)
+ser.lin = (lambda*(bcser.lin)+1)^(1/lambda)
 
-f36 = plot_ly(x = time(serEC), y = serEC,
+f36 = plot_ly(x = time(ser), y = ser,
              type = "scatter",
              mode="lines",
              fill="tonexty",
              line = list(color = "#2a788e"),
              fillcolor="rgba(42, 120, 142, 0.5)",
-             name = "serEC"
+             name = "ser"
              ) %>% 
-  add_trace(x=~time(serEC.lin), y=~serEC.lin,
+  add_trace(x=~time(ser.lin), y=~ser.lin,
             type = "scatter",
-            name = "serEC.lin",
+            name = "ser.lin",
             mode="lines",
             fill=F,
             line = list(color = "rgb(65, 68, 135)")
@@ -1371,6 +1375,26 @@ f36 = plot_ly(x = time(serEC), y = serEC,
          ) 
 f36
 ```
+
+```{r}
+f36 = plot_ly(x = time(bcser), y = bcser-bcser.lin,
+             type = "scatter",
+             mode="lines",
+             line = list(color = "#2a788e"),
+             name = "ser"
+             ) %>%
+  layout(title='<b> Total exportations in Spain <b>',
+         xaxis=list(title='Time'),
+         yaxis=list(title='(Thousand million euros)')
+         ) 
+f36
+```
+
+```{r}
+bcserEC.lin = bcser.lin - coef(mEC)["vEa"]*vEa - coef(mEC)["vTD"]*vTD
+```
+
+
 
 ## Re-identificación modelo
 
@@ -1468,10 +1492,9 @@ f41
 ```
 
 ```{r}
-arima(d1d12bcserEC.lin,order=c(2,0,0),
-           seasonal=list(order=c(0,0,1),period=12))
-mOEC = arima(bcserEC.lin,order=c(2,1,0),
-           seasonal=list(order=c(0,1,1),period=12))
+mOEC = arima(bcser.lin,order=c(2,1,0),
+           seasonal=list(order=c(0,1,1),period=12),
+           xreg=data.frame(vEa,vTD))
 mOEC
 ```
 
@@ -1618,13 +1641,17 @@ f46
 ## Estabilidad
 
 ```{r}
-last=c(2017,12); trainEC.lin = window(serEC.lin, end=last)
+last=c(2017,12); trainEC.lin = window(ser.lin, end=last)
 ```
 
 ```{r}
+vEa2=window(vEa,end=last)
+vTD2=window(vTD,end=last)
+
 bctrainEC.lin = (trainEC.lin^lambda-1)/lambda
 mEC_train.lin <- arima(bctrainEC.lin, order=c(2,1,0),
-                  seasonal=list(order=c(0,1,1), period=12))
+                  seasonal=list(order=c(0,1,1), period=12),
+                  xreg=data.frame(vEa2,vTD2))
 mEC_train.lin
 mOEC
 ```
@@ -1637,9 +1664,13 @@ cat("\nT-ratios:",round(mOEC$coef/sqrt(diag(mOEC$var.coef)),2))
 ## Predicciones
 
 ```{r}
+vEa2=window(vEa,start=last+c(0,1))
+vTD2=window(vTD,start=last+c(0,1))
+
 wLS <- sum(mod.atip$atip[mod.atip$atip[, 2] == "LS", 3])
 
-preEC.lin = predict(mEC_train.lin, n.ahead=12)
+preEC.lin = predict(mEC_train.lin, n.ahead=12,
+                    newxreg=data.frame(vEa2,vTD2))
 
 pr1 = (lambda*(preEC.lin$pred+wLS)+1)^(1/lambda)
 
