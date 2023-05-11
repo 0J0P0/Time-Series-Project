@@ -1,8 +1,6 @@
 # Time-Series-Project
 
----
 Time series analysis to obtain future forecasts from the last recorded observation, applying the Box-Jenkins methodology using ARIMA models.
-
 
 
 ## Useful links:
