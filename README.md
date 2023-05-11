@@ -2,7 +2,9 @@
 
 ---
 Time series analysis to obtain future forecasts from the last recorded observation, applying the Box-Jenkins methodology using ARIMA models.
----
+
+
+
 ## Useful links:
 - [Forecasting plot](https://www.simplilearn.com/tutorials/data-science-tutorial/time-series-forecasting-in-r)
 - [Visualization and ACF](https://www.r-bloggers.com/2020/10/how-to-visualize-time-series-data-tidy-forecasting-in-r/)
